@@ -176,11 +176,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\miniz.c"
+				>
+			</File>
+			<File
 				RelativePath="..\swd.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\swd_reader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\swf.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\swf_reader.cpp"
 				>
 			</File>
 		</Filter>
@@ -198,7 +210,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\swd_reader.h"
+				>
+			</File>
+			<File
 				RelativePath="..\swf.h"
+				>
+			</File>
+			<File
+				RelativePath="..\swf_reader.h"
 				>
 			</File>
 		</Filter>
