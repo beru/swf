@@ -184,7 +184,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\swd_reader.cpp"
+				RelativePath="..\swdInfo.cpp"
 				>
 			</File>
 			<File
@@ -193,6 +193,10 @@
 			</File>
 			<File
 				RelativePath="..\swf_reader.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\util.cpp"
 				>
 			</File>
 		</Filter>
@@ -210,7 +214,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\swd_reader.h"
+				RelativePath="..\swdInfo.h"
 				>
 			</File>
 			<File
@@ -219,6 +223,10 @@
 			</File>
 			<File
 				RelativePath="..\swf_reader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\util.h"
 				>
 			</File>
 		</Filter>

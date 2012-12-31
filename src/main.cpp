@@ -1,10 +1,8 @@
 
 #include <stdio.h>
 
-#include "swd_reader.h"
+#include "swdInfo.h"
 #include "swf_reader.h"
-
-FileInfoMap fileInfoMap;
 
 static inline
 size_t getFileSize(FILE* file)
@@ -20,7 +18,9 @@ int main(int argc, char* argv[])
 	if (argc < 3) {
 		return puts("specify swd swf filenames.");
 	}
-
+	
+	SWDInfo swdInfo;
+	
 	std::vector<uint8_t> swdBuff;
 	{
 		FILE* f = fopen(argv[1], "rb");
@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 		swdBuff.resize(sz);
 		fread(&swdBuff[0], 1, sz, f);
 		fclose(f);
-		ReadSWD(&swdBuff[0], sz, fileInfoMap);
+		swdInfo.Read(&swdBuff[0], sz);
 	}
 	
 	std::vector<uint8_t> swfBuff;

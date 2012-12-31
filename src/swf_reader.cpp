@@ -34,11 +34,23 @@ size_t getRectangleByteLength(const uint8_t* buff)
 	return nBytes;
 }
 
-void parseActions(const uint8_t* buff, size_t len)
+struct ByteCodeInfo
+{
+	SWF::ActionCode::Enum code;
+	uint32_t offset;
+};
+
+std::vector<ByteCodeInfo> byteCodes;
+
+void parseActions(const uint8_t* const pStart, const uint8_t* buff, size_t len)
 {
 	const uint8_t* start = buff;
 	do {
 		uint8_t code = *buff;
+		ByteCodeInfo info;
+		info.code = (SWF::ActionCode::Enum) code;
+		info.offset = buff - pStart;
+		byteCodes.push_back(info);
 		++buff;
 		if (code & 0x80) {
 			size_t recLen = *(const uint16_t*)buff;
@@ -62,7 +74,7 @@ void ReadSWF(const uint8_t* buff, size_t length)
 		return;
 	}
 	// frame size
-	const uint8_t* pStart = buff;
+	const uint8_t* const pStart = buff;
 	buff += sizeof(SWF::Header);
 	buff += getRectangleByteLength(buff);
 	buff += 4;
@@ -77,7 +89,7 @@ void ReadSWF(const uint8_t* buff, size_t length)
 		}
 		switch (type) {
 		case SWF::TagType::DoAction:
-			parseActions(buff, len);
+			parseActions(pStart, buff, len);
 			break;
 		case SWF::TagType::DoInitAction:
 			{

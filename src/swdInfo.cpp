@@ -1,22 +1,10 @@
 
-#include "swd_reader.h"
+#include "swdInfo.h"
 
 #include "swd.h"
+#include "util.h"
 
-static inline
-FileInfo& getFileInfo(FileInfoMap& map, uint32_t index)
-{
-	FileInfoMapIt it = map.find(index);
-	if (it != map.end()) {
-		return it->second;
-	}else {
-		FileInfo info;
-		info.index = index;
-		return map[index] = info;
-	}
-}
-
-void ReadSWD(const uint8_t* buff, size_t length, FileInfoMap& fileInfoMap)
+void SWDInfo::Read(const uint8_t* buff, size_t length)
 {
 	const uint8_t* pStart = buff;
 	const uint8_t* pBuff = pStart;
@@ -31,34 +19,34 @@ void ReadSWD(const uint8_t* buff, size_t length, FileInfoMap& fileInfoMap)
 		case SWD::TagId_Offset:
 			{
 				const SWD::Tag_Offset* pOffset = (const SWD::Tag_Offset*) pTag;
-				FileInfo& info = getFileInfo(fileInfoMap, pOffset->index);
-				FileInfo::Offset offset;
-				offset.src = pOffset->lineNumber;
+				SWDInfo::Offset offset;
+				offset.file = pOffset->index;
+				offset.line = pOffset->lineNumber;
 				offset.swf = pOffset->byteOffset;
-				info.offsets.push_back(offset);
+				offsets.push_back(offset);
 			}
 			break;
 		case SWD::TagId_Script:
 			{
 				const SWD::Tag_Script* pScript = (const SWD::Tag_Script*) pTag;
-				FileInfo& info = getFileInfo(fileInfoMap, pScript->index);
-				info.bitmap = pScript->bitmap;
-				info.name = pScript->name();
-				info.src = pScript->text();
+				SWDInfo::File file;
+				file.index = pScript->index;
+				file.bitmap = pScript->bitmap;
+				file.name = utf8_to_sjis(pScript->name());
+				file.src = pScript->text();
+				files.push_back(file);
 			}
 			break;
 		case SWD::TagId_BreakPoint:
 			{
 				const SWD::Tag_BreakPoint* pBP = (const SWD::Tag_BreakPoint*) pTag;
-				FileInfo& info = getFileInfo(fileInfoMap, pBP->index);
-				info.breakPoints.push_back(pBP->lineNumber);
+				breakPoints.push_back(pBP->lineNumber);
 			}
 			break;
 		}
-
+		
 		pBuff += pTag->getSize();
 		pTag = (const SWD::Tag*) pBuff;
 	}
-	
 }
 
