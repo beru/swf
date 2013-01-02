@@ -4,6 +4,14 @@
 #include "swd.h"
 #include "util.h"
 
+#include <algorithm>
+
+
+bool compare(const SWDInfo::Offset& lhs, const SWDInfo::Offset& rhs)
+{
+return lhs.swf < rhs.swf;
+}
+
 void SWDInfo::Read(const uint8_t* buff, size_t length)
 {
 	const uint8_t* pStart = buff;
@@ -32,7 +40,7 @@ void SWDInfo::Read(const uint8_t* buff, size_t length)
 				SWDInfo::File file;
 				file.index = pScript->index;
 				file.bitmap = pScript->bitmap;
-				file.name = utf8_to_sjis(pScript->name());
+				file.name = pScript->name();
 				file.src = pScript->text();
 				files.push_back(file);
 			}
@@ -48,5 +56,7 @@ void SWDInfo::Read(const uint8_t* buff, size_t length)
 		pBuff += pTag->getSize();
 		pTag = (const SWD::Tag*) pBuff;
 	}
+
+	std::sort(offsets.begin(), offsets.end(), compare);
 }
 

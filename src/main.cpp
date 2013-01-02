@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "swdInfo.h"
-#include "swf_reader.h"
+#include "swf_processor.h"
 
 static inline
 size_t getFileSize(FILE* file)
@@ -15,8 +15,8 @@ size_t getFileSize(FILE* file)
 
 int main(int argc, char* argv[])
 {
-	if (argc < 3) {
-		return puts("specify swd swf filenames.");
+	if (argc < 4) {
+		return puts("usage: swd src_swf dst_swf");
 	}
 	
 	SWDInfo swdInfo;
@@ -24,21 +24,28 @@ int main(int argc, char* argv[])
 	std::vector<uint8_t> swdBuff;
 	{
 		FILE* f = fopen(argv[1], "rb");
-		size_t sz = getFileSize(f);
-		swdBuff.resize(sz);
-		fread(&swdBuff[0], 1, sz, f);
-		fclose(f);
-		swdInfo.Read(&swdBuff[0], sz);
+		if (f) {
+			size_t sz = getFileSize(f);
+			swdBuff.resize(sz);
+			fread(&swdBuff[0], 1, sz, f);
+			fclose(f);
+			swdInfo.Read(&swdBuff[0], sz);
+		}
 	}
 	
-	std::vector<uint8_t> swfBuff;
+	std::vector<uint8_t> srcSwfBuff;
+	std::vector<uint8_t> dstSwfBuff;
 	{
 		FILE* f = fopen(argv[2], "rb");
 		size_t sz = getFileSize(f);
-		swfBuff.resize(sz);
-		fread(&swfBuff[0], 1, sz, f);
+		srcSwfBuff.resize(sz);
+		fread(&srcSwfBuff[0], 1, sz, f);
 		fclose(f);
-		ReadSWF(&swfBuff[0], sz);
+		ProcessSWF(swdInfo, &srcSwfBuff[0], sz, dstSwfBuff);
+
+		f = fopen(argv[3], "wb");
+		fwrite(&dstSwfBuff[0], 1, dstSwfBuff.size(), f);
+		fclose(f);
 	}
 	
 	return 0;

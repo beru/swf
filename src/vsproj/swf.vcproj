@@ -44,7 +44,7 @@
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
@@ -113,14 +113,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="1"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
-				RuntimeLibrary="2"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				ForcedIncludeFiles="stdint.h"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -172,6 +173,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\action_processor.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\main.cpp"
 				>
 			</File>
@@ -192,7 +197,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\swf_reader.cpp"
+				RelativePath="..\swf_processor.cpp"
 				>
 			</File>
 			<File
@@ -205,6 +210,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\action_processor.h"
+				>
+			</File>
 			<File
 				RelativePath="..\stdint.h"
 				>
@@ -222,7 +231,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\swf_reader.h"
+				RelativePath="..\swf_processor.h"
 				>
 			</File>
 			<File

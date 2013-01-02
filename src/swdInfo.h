@@ -9,7 +9,7 @@ struct SWDInfo
 	{
 		uint32_t index;
 		uint32_t bitmap;
-		std::string name;
+		const char* name;
 		const char* src;
 	};
 	
