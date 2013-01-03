@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <string.h>
 
-#include "action_processor.h"
 #include "swdInfo.h"
 
 static inline
@@ -30,6 +29,21 @@ bool decode(std::vector<uint8_t>& decompressed, const uint8_t* src, size_t lengt
 	return true;
 }
 
+static inline
+bool encode(std::vector<uint8_t>& buff)
+{
+	std::vector<uint8_t> src = buff;
+	const SWF::Header* header = (const SWF::Header*) &src[0];
+	mz_ulong destLen = buff.size() - sizeof(SWF::Header);
+	int ret = mz_compress(&buff[0] + sizeof(SWF::Header), &destLen, &src[0] + sizeof(SWF::Header), destLen);
+	if (ret) {
+		return false;
+	}
+	buff[0] = 'C';
+	buff.resize(sizeof(SWF::Header) + destLen);
+	return true;
+}
+
 size_t getRectangleByteLength(const uint8_t* buff)
 {
 	uint8_t b = buff[0];
@@ -44,32 +58,14 @@ void append(std::vector<uint8_t>& dst, const uint8_t* buff, size_t nBytes)
 	dst.insert(dst.end(), buff, buff+nBytes);
 }
 
-const char* findFileName(const SWDInfo& swdInfo, size_t pos)
-{
-	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;
-	for (size_t i=0; i<offsets.size(); ++i) {
-		const SWDInfo::Offset& o = offsets[i];
-		if (o.swf >= pos) {
-			size_t index = o.file;
-			for (size_t j=0; j<swdInfo.files.size(); ++j) {
-				const SWDInfo::File& f = swdInfo.files[j];
-				if (f.index == index) {
-					return f.name;
-				}
-			}
-
-		}
-	}
-	return 0;
-}
-
-void ProcessSWF(const SWDInfo& swdInfo, const uint8_t* src, size_t length, std::vector<uint8_t>& dst)
+void ProcessSWF(IActionProcessor& actionProcessor, const uint8_t* src, size_t length, std::vector<uint8_t>& dst)
 {
 	dst.clear();
 
 	// decompress zlib
 	std::vector<uint8_t> decompressed;
 	const uint8_t* buff = src;
+	bool bCompressed = false;
 	if (strncmp((const char*)buff, "FWS", 3) == 0) {
 	}else if (strncmp((const char*)buff, "CWS", 3) == 0) {
 		if (!decode(decompressed, buff, length)) {
@@ -77,6 +73,7 @@ void ProcessSWF(const SWDInfo& swdInfo, const uint8_t* src, size_t length, std::
 		}
 		buff = &decompressed[0];
 		length = decompressed.size();
+		bCompressed = true;
 	}else {
 		return;
 	}
@@ -110,20 +107,15 @@ void ProcessSWF(const SWDInfo& swdInfo, const uint8_t* src, size_t length, std::
 		switch (type) {
 		case SWF::TagType::DoAction:
 			{
-				const char* pFileName = findFileName(swdInfo, buff - pStart);
-				ActionProcessor ap(pStart, swdInfo, dst, pFileName);
-				ap.Process(buff, len);
+				actionProcessor.Process(pStart, buff, len);
 				buff += len;
 			}
 			break;
 		case SWF::TagType::DoInitAction:
 			{
-				const char* pFileName = findFileName(swdInfo, buff - pStart);
 				uint16_t spriteID = *(const uint16_t*) buff;
 				append(dst, buff, 2);
-				size_t actionLen = len - 2;
-				ActionProcessor ap(pStart, swdInfo, dst, pFileName);
-				ap.Process(buff+2, len-2);
+				actionProcessor.Process(pStart, buff+2, len-2);
 				buff += len;
 			}
 			break;
@@ -136,5 +128,12 @@ void ProcessSWF(const SWDInfo& swdInfo, const uint8_t* src, size_t length, std::
 			*(uint32_t*)&dst[tagLenPos] = dst.size() - (tagLenPos+4);
 		}
 	} while (buff - pStart < length);
+
+	SWF::Header* pHeader = (SWF::Header*) &dst[0];
+	pHeader->fileLength = dst.size();
+
+	if (bCompressed) {
+		encode(dst);
+	}
 }
 

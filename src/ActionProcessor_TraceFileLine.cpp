@@ -1,9 +1,23 @@
 
-#include "action_processor.h"
+#include "ActionProcessor_TraceFileLine.h"
 
 #include "swf.h"
 
-void ActionProcessor::Process(const uint8_t* buff, size_t len)
+// override
+// virtual
+void ActionProcessor_TraceFileLine::Process(
+	const uint8_t* const pStart,
+	const uint8_t* buff,
+	size_t len
+	)
+{
+	this->pStart = pStart;
+	fileName = findFileName(swdInfo, buff - pStart);
+	fileName += " ";
+	iterate(buff, len);
+}
+
+void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 {
 	const uint8_t* start = buff;
 	while (buff - start < len) {
@@ -36,16 +50,15 @@ void ActionProcessor::Process(const uint8_t* buff, size_t len)
 				size_t prevSize = dst.size();
 				append(buff, 2);
 				buff += 2;
-				Process(buff, srcSize);
+				iterate(buff, srcSize);
 				buff += srcSize;
 				size_t newSize = dst.size() - (prevSize + 2);
 				*(uint16_t*)(&dst[prevSize]) = newSize;
 			}
 			break;
-		case SWF::ActionCode::DefineFunction2:
-			append(buff, 1);
-			buff += 3;
-			break;
+// デバッグを許可にチェックを付けるとDefineFunction2は使われない
+//		case SWF::ActionCode::DefineFunction2:
+//			break;
 		case SWF::ActionCode::Trace:
 			{
 				size_t lineNo = getLineNo(buff);
@@ -53,9 +66,9 @@ void ActionProcessor::Process(const uint8_t* buff, size_t len)
 				sprintf(str, "%s%d ", fileName.c_str(), lineNo);
 				++buff;
 				pushString(str);
-				dst.push_back(SWF::ActionCode::StackSwap);
-				dst.push_back(SWF::ActionCode::StringAdd);
-				dst.push_back(SWF::ActionCode::Trace);
+				append(SWF::ActionCode::StackSwap);
+				append(SWF::ActionCode::StringAdd);
+				append(SWF::ActionCode::Trace);
 			}
 			break;
 		default:
@@ -71,18 +84,18 @@ void ActionProcessor::Process(const uint8_t* buff, size_t len)
 	}
 }
 
-void ActionProcessor::pushString(const char* str)
+void ActionProcessor_TraceFileLine::pushString(const char* str)
 {
-	dst.push_back(SWF::ActionCode::Push);
+	append(SWF::ActionCode::Push);
 	size_t slen = strlen(str);
 	uint16_t len = 1 + slen + 1;
 	append((const uint8_t*)&len, 2);
-	dst.push_back(0); // string literal
+	append(0); // string literal
 	append((const uint8_t*)str, slen + 1);
 
 }
 
-uint8_t ActionProcessor::getLineNo(const uint8_t* buff)
+uint8_t ActionProcessor_TraceFileLine::getLineNo(const uint8_t* buff)
 {
 	size_t offset = buff - pStart;
 	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;

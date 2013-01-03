@@ -60,3 +60,22 @@ void SWDInfo::Read(const uint8_t* buff, size_t length)
 	std::sort(offsets.begin(), offsets.end(), compare);
 }
 
+const char* findFileName(const SWDInfo& swdInfo, size_t pos)
+{
+	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;
+	for (size_t i=0; i<offsets.size(); ++i) {
+		const SWDInfo::Offset& o = offsets[i];
+		if (o.swf >= pos) {
+			size_t index = o.file;
+			for (size_t j=0; j<swdInfo.files.size(); ++j) {
+				const SWDInfo::File& f = swdInfo.files[j];
+				if (f.index == index) {
+					return f.name;
+				}
+			}
+
+		}
+	}
+	return 0;
+}
+

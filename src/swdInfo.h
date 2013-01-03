@@ -27,4 +27,4 @@ struct SWDInfo
 	void Read(const uint8_t* buff, size_t length);
 };
 
-
+const char* findFileName(const SWDInfo& swdInfo, size_t pos);

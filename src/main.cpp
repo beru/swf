@@ -3,6 +3,8 @@
 
 #include "swdInfo.h"
 #include "swf_processor.h"
+#include "ActionProcessor_TraceFileLine.h"
+#include "ActionProcessor_FunctionBeginEnd.h"
 
 static inline
 size_t getFileSize(FILE* file)
@@ -16,34 +18,46 @@ size_t getFileSize(FILE* file)
 int main(int argc, char* argv[])
 {
 	if (argc < 4) {
-		return puts("usage: swd src_swf dst_swf");
+		return puts("usage: src_swf dst_swf");
 	}
 	
+	const char* srcFileName = argv[1];
+	const char* dstFileName = argv[2];
 	SWDInfo swdInfo;
 	
 	std::vector<uint8_t> swdBuff;
 	{
-		FILE* f = fopen(argv[1], "rb");
-		if (f) {
-			size_t sz = getFileSize(f);
-			swdBuff.resize(sz);
-			fread(&swdBuff[0], 1, sz, f);
-			fclose(f);
-			swdInfo.Read(&swdBuff[0], sz);
+		const char* pDot = strrchr(srcFileName, '.');
+		if (pDot) {
+			char swdFileName[_MAX_PATH];
+			size_t len = (pDot+1)-srcFileName;
+			memcpy(swdFileName, srcFileName, len);
+			memcpy(swdFileName+len, "swd", 4);
+			FILE* f = fopen(swdFileName, "rb");
+			if (f) {
+				size_t sz = getFileSize(f);
+				swdBuff.resize(sz);
+				fread(&swdBuff[0], 1, sz, f);
+				fclose(f);
+				swdInfo.Read(&swdBuff[0], sz);
+			}
 		}
 	}
 	
 	std::vector<uint8_t> srcSwfBuff;
 	std::vector<uint8_t> dstSwfBuff;
 	{
-		FILE* f = fopen(argv[2], "rb");
+		FILE* f = fopen(srcFileName, "rb");
 		size_t sz = getFileSize(f);
 		srcSwfBuff.resize(sz);
 		fread(&srcSwfBuff[0], 1, sz, f);
 		fclose(f);
-		ProcessSWF(swdInfo, &srcSwfBuff[0], sz, dstSwfBuff);
 
-		f = fopen(argv[3], "wb");
+//		ActionProcessor_TraceFileLine ap(dstSwfBuff, swdInfo);
+		ActionProcessor_FunctionBeginEnd ap("onFuncBegin", "onFuncEnd", dstSwfBuff);
+		ProcessSWF(ap, &srcSwfBuff[0], sz, dstSwfBuff);
+
+		f = fopen(dstFileName, "wb");
 		fwrite(&dstSwfBuff[0], 1, dstSwfBuff.size(), f);
 		fclose(f);
 	}
