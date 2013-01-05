@@ -3,7 +3,7 @@
 
 #include "swf.h"
 
-#include "Interpreter.h"
+#include "ActionScript/Interpreter.h"
 
 SWF::Interpreter interpreter;
 

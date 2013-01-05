@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -184,19 +185,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Interpreter.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\main.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\miniz.c"
-				>
-			</File>
-			<File
-				RelativePath="..\Object.cpp"
 				>
 			</File>
 			<File
@@ -246,18 +239,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Interpreter.h"
-				>
-			</File>
-			<File
-				RelativePath="..\InterpreterImpl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Object.h"
-				>
-			</File>
-			<File
 				RelativePath="..\stdint.h"
 				>
 			</File>
@@ -287,6 +268,70 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+		</Filter>
+		<Filter
+			Name="ActionScript"
+			>
+			<File
+				RelativePath="..\ActionScript\Array.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Array.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Boolean.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Boolean.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Date.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Date.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Interpreter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Interpreter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\InterpreterImpl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Number.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Number.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Object.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\Object.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\String.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ActionScript\String.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
