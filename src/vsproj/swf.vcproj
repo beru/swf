@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ASVM.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\main.cpp"
 				>
 			</File>
@@ -223,6 +227,18 @@
 			</File>
 			<File
 				RelativePath="..\ActionProcessor_TraceFileLine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ASVM.h"
+				>
+			</File>
+			<File
+				RelativePath="..\FastDelegate.h"
+				>
+			</File>
+			<File
+				RelativePath="..\FastDelegateBind.h"
 				>
 			</File>
 			<File

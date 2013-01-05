@@ -3,6 +3,10 @@
 
 #include "swf.h"
 
+#include "ASVM.h"
+
+ASVM vm;
+
 // override
 // virtual
 void ActionProcessor_FunctionBeginEnd::Process(

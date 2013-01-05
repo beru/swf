@@ -102,8 +102,7 @@ struct TagType
 	};
 };
 
-struct ActionCode
-{
+namespace ActionCode {
 	enum Enum : unsigned char {
 		EndFlag = 0x00,
 		
@@ -215,7 +214,7 @@ struct ActionCode
 		Throw = 0x2A,
 
 	};
-};
+} // namespace ActionCode
 
 struct ActionWaitForFrame
 {
