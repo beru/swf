@@ -2,6 +2,11 @@
 #include "Object.h"
 
 namespace SWF {
+namespace ActionScript {
+
+Object::Object()
+{
+}
 
 Object& Object::get(const std::string& name)
 {
@@ -38,5 +43,6 @@ bool Object::isInstanceOf(const Object& constr)
 	return true;
 }
 
+} // namespace ActionScript
 } // namespace SWF
 

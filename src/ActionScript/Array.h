@@ -1,9 +1,17 @@
 #pragma once
 
-class Array
+#include "Object.h"
+
+namespace SWF {
+namespace ActionScript {
+
+struct Array : Object
 {
-public:
 	
 private:
 	
 };
+
+} // namespace ActionScript
+} // namespace SWF
+

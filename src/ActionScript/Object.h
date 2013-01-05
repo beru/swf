@@ -4,10 +4,13 @@
 #include <map>
 
 namespace SWF {
+namespace ActionScript {
 
 struct Object
 {
-public:
+	Object();
+	virtual ~Object() {}
+	
 	Object& get(const std::string& name);
 	const Object& getMember(const std::string& name) const;
 	void setMember(const std::string& name, const Object& o);
@@ -26,9 +29,10 @@ public:
 	String toString() const;
 	bool unwatch(const std::string& name);
 */
-private:
+protected:
 	typedef std::map<std::string, Object> ContainerT;
 	ContainerT aa;
 };
 
+} // namespace ActionScript
 } // namespace SWF
