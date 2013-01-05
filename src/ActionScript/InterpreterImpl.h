@@ -1,6 +1,5 @@
 #pragma once
 
-#include "FastDelegate.h"
 #include <boost/variant.hpp>
 #include <vector>
 #include <string>
