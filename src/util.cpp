@@ -3,36 +3,55 @@
 
 #include <windows.h>
 
-std::string ToMultiByte(const wchar_t* val)
+std::string utf8_to_ansi(const char* utf8)
 {
-	int length( ::WideCharToMultiByte( CP_ACP, 0, val, -1, NULL, 0, NULL, NULL ) );
-	std::string result( length - 1, 0 );
-	::WideCharToMultiByte( CP_ACP, 0, &val[ 0 ], -1, &result[ 0 ], length, NULL, NULL );
-	return result;
+	return utf16_to_ansi(utf8_to_utf16(utf8));
 }
 
-std::wstring ToWideChar(const char* val)
+std::string ansi_to_utf8(const char* ansi)
 {
-	int length( ::MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, &val[ 0 ], -1, NULL, 0 ) );
-	std::wstring result( length, 0 );
-	::MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, &val[ 0 ], -1, &result[ 0 ], length );
-	return result;
+	return utf16_to_utf8(ansi_to_utf16(ansi));
 }
 
-std::string utf8_to_sjis(const char* utf8)
+static inline
+std::string utf16_to_mbcs(const wchar_t* utf16, UINT codePage)
 {
-	int length = ::MultiByteToWideChar( CP_UTF8, 0, utf8, -1, NULL, 0 );
+	int length = ::WideCharToMultiByte( codePage, 0, &utf16[0], -1, NULL, 0, NULL, NULL );
+	std::string mbcs( length - 1, 0 );
+	::WideCharToMultiByte( codePage, 0, &utf16[0], -1, &mbcs[ 0 ], length, NULL, NULL );
+	return mbcs;
+}
+
+std::string utf16_to_ansi(const wchar_t* utf16)
+{
+	return utf16_to_mbcs(utf16, CP_ACP);
+}
+
+std::string utf16_to_utf8(const wchar_t* utf16)
+{
+	return utf16_to_mbcs(utf16, CP_UTF8);
+}
+
+static inline
+std::wstring mbcs_to_utf16(const char* mbcs, UINT codePage)
+{
+	int length = ::MultiByteToWideChar( codePage, 0, mbcs, -1, NULL, 0 );
 	if (length == 0) {
 		DWORD err = GetLastError();
 		int hoge = 0;
 	}
 	std::wstring utf16( length, 0 );
-	::MultiByteToWideChar( CP_UTF8, 0, utf8, -1, &utf16[ 0 ], length );
-	
-	length = ::WideCharToMultiByte( CP_ACP, 0, &utf16[0], -1, NULL, 0, NULL, NULL );
-	std::string sjis( length - 1, 0 );
-	::WideCharToMultiByte( CP_ACP, 0, &utf16[0], -1, &sjis[ 0 ], length, NULL, NULL );
-	return sjis;
+	::MultiByteToWideChar( codePage, 0, mbcs, -1, &utf16[ 0 ], length );
+	return utf16;
 }
 
+std::wstring utf8_to_utf16(const char* utf8)
+{
+	return mbcs_to_utf16(utf8, CP_UTF8);
+}
+
+std::wstring ansi_to_utf16(const char* ansi)
+{
+	return mbcs_to_utf16(ansi, CP_ACP);
+}
 

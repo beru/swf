@@ -6,7 +6,7 @@
 #include <string>
 
 #include "Interpreter.h"
-#include <mbstring.h>
+#include "util.h"
 
 namespace SWF {
 
@@ -153,7 +153,6 @@ private:
 		RegisterNum,
 		bool,
 		double,
-		uint32_t,
 		std::string
 	> Value;
 	double toFloat(const Value& v) {
@@ -164,8 +163,6 @@ private:
 //			return toFloat();
 		case ActionPushType::Double:
 			return boost::get<double>(v);
-		case ActionPushType::Integer:
-			return boost::get<int32_t>(v);
 		default:
 			return 0.0;
 		}
@@ -184,22 +181,18 @@ private:
 //			return toFloat();
 		case ActionPushType::Double:
 			return _gcvt(boost::get<double>(v), 8, buff);
-		case ActionPushType::Integer:
-			return _itoa(boost::get<int32_t>(v), buff, 10);
 		default:
 			return "";
 		}
 	}
-	int32_t toInteger(const Value& v) {
+	double toInteger(const Value& v) {
 		switch (v.which()) {
 		case ActionPushType::Float:
-			return (int32_t) boost::get<float>(v);
+			return fabs(boost::get<float>(v));
 		case ActionPushType::Register:
 //			return toFloat();
 		case ActionPushType::Double:
-			return (int32_t) boost::get<double>(v);
-		case ActionPushType::Integer:
-			return boost::get<int32_t>(v);
+			return fabs(boost::get<double>(v));
 		default:
 			return 0;
 		}
@@ -220,31 +213,31 @@ private:
 	}
 	// SWF 3 actions
 	void actionGotoFrame() {
-	
+		throw "not implemented";
 	}
 	void actionPrevFrame() {
-	
+		throw "not implemented";
 	}
 	void actionPlay() {
-	
+		throw "not implemented";
 	}
 	void actionStop() {
-	
+		throw "not implemented";
 	}
 	void actionToggleQuality() {
-	
+		throw "not implemented";
 	}
 	void actionStopSounds() {
-	
+		throw "not implemented";
 	}
 	void actionWaitFrame() {
-	
+		throw "not implemented";
 	}
 	void actionSetTarget() {
-	
+		throw "not implemented";
 	}
 	void actionGoToLabel() {
-	
+		throw "not implemented";
 	}
 	// SWF 4 actions
 	void actionPush() {
@@ -281,7 +274,7 @@ private:
 				pData += 8;
 				break;
 			case Integer:
-				stackPush(*(const uint32_t*)pData);
+				stackPush((double)*(const uint32_t*)pData);
 				pData += 4;
 				break;
 			case Constant8:
@@ -347,7 +340,7 @@ private:
 	}
 	void actionStringLength() {
 		Value a = stackPop();
-		stackPush(strlen(toString(a).c_str()));
+		stackPush((double)strlen(toString(a).c_str()));
 	
 	}
 	void actionStringAdd() {
@@ -369,49 +362,68 @@ private:
 	}
 	void actionMBStringLength() {
 		Value a = stackPop();
-		stackPush(_mbstrlen(toString(a).c_str()));
+		stackPush((double)utf8_to_utf16(toString(a)).size());
 	}
 	void actionMBStringExtract() {
-	
+		Value count = stackPop();
+		Value index = stackPop();
+		Value string = stackPop();
+		stackPush(utf16_to_utf8(utf8_to_utf16(toString(string)).substr(toInteger(index), toInteger(count))));
 	}
 	void actionToInteger() {
-	
+		Value a = stackPop();
+		stackPush(fabs(toFloat(a)));
 	}
 	void actionCharToAscii() {
-	
+		Value a = stackPop();
+		std::string s = toString(a);
+		int code = 0;
+		if (s.size()) {
+			code = s[0];
+		}
+		stackPush((double)code);
 	}
 	void actionAsciiToChar() {
-	
+		Value a = stackPop();
+		stackPush(std::string((char)toInteger(a), 1));
 	}
 	void actionMBCharToAscii() {
-	
+		Value a = stackPop();
+		std::wstring s = utf8_to_utf16(toString(a));
+		int code = 0;
+		if (s.size()) {
+			code = s[0];
+		}
+		stackPush((double)code);
 	}
 	void actionMBAsciiToChar() {
-	
+		Value a = stackPop();
+		stackPush(utf16_to_utf8(std::wstring((char)toInteger(a), 1)));
 	}
 	void actionJump() {
-	
+		throw "not implemented";
 	}
 	void actionIf() {
-	
+		Value a = stackPop();
+		throw "not implemented";
 	}
 	void actionCall() {
-	
+		throw "not implemented";
 	}
 	void actionGetVariable() {
-	
+		
 	}
 	void actionSetVariable() {
 	
 	}
 	void actionGetURL2() {
-	
+		throw "not implemented";
 	}
 	void actionGotoFrame2() {
-	
+		throw "not implemented";
 	}
 	void actionSetTarget2() {
-	
+		throw "not implemented";
 	}
 	void actionGetProperty() {
 	
@@ -420,19 +432,19 @@ private:
 	
 	}
 	void actionCloneSprite() {
-	
+		throw "not implemented";
 	}
 	void actionRemoveSprite() {
-	
+		throw "not implemented";
 	}
 	void actionStartDrag() {
-	
+		throw "not implemented";
 	}
 	void actionEndDrag() {
-	
+		throw "not implemented";
 	}
 	void actionWaitForFrame2() {
-	
+		throw "not implemented";
 	}
 	void actionTrace() {
 	

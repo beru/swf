@@ -196,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Object.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\swd.cpp"
 				>
 			</File>
@@ -247,6 +251,10 @@
 			</File>
 			<File
 				RelativePath="..\InterpreterImpl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Object.h"
 				>
 			</File>
 			<File
