@@ -17,7 +17,7 @@ size_t getFileSize(FILE* file)
 
 int main(int argc, char* argv[])
 {
-	if (argc < 4) {
+	if (argc < 3) {
 		return puts("usage: src_swf dst_swf");
 	}
 	

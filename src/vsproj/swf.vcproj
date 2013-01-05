@@ -184,7 +184,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ASVM.cpp"
+				RelativePath="..\Interpreter.cpp"
 				>
 			</File>
 			<File
@@ -230,10 +230,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ASVM.h"
-				>
-			</File>
-			<File
 				RelativePath="..\FastDelegate.h"
 				>
 			</File>
@@ -243,6 +239,14 @@
 			</File>
 			<File
 				RelativePath="..\IActionProcessor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Interpreter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\InterpreterImpl.h"
 				>
 			</File>
 			<File

@@ -3,9 +3,9 @@
 
 #include "swf.h"
 
-#include "ASVM.h"
+#include "Interpreter.h"
 
-ASVM vm;
+SWF::Interpreter interpreter;
 
 // override
 // virtual
@@ -29,6 +29,7 @@ void ActionProcessor_FunctionBeginEnd::iterate(const uint8_t* buff, size_t len)
 		if (code & 0x80) {
 			recLen = *(const uint16_t*)(buff+1);
 		}
+		interpreter.Process(buff, ecode, recLen);
 		switch (ecode) {
 		case SWF::ActionCode::DefineFunction:
 		case SWF::ActionCode::DefineFunction2:
