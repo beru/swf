@@ -3,10 +3,12 @@
 #include <vector>
 #include <string>
 #include <math.h>
+#include <windows.h>
 
 #include "Interpreter.h"
 #include "util.h"
 #include "Object.h"
+#include "Array.h"
 
 namespace SWF {
 namespace ActionScript {
@@ -184,11 +186,13 @@ private:
 		char buff[32];
 		buff[0] = 0;
 		switch (v.type) {
+		case Value::Type_String:
+			return v.str;
 		case Value::Type_Float:
 			return _gcvt(v.f, 8, buff);
-		case ActionPushType::Null:
+		case Value::Type_Null:
 			return "[object Null]";
-		case ActionPushType::Undefined:
+		case Value::Type_Undefined:
 			return "[object Undefined]";
 		case Value::Type_Register:
 //			return toFloat();
@@ -224,51 +228,80 @@ private:
 //			return 0;
 		}
 	}
+	bool toBoolean(const Value& v) {
+		switch (v.type) {
+		case Value::Type_String:
+			return v.str != "";
+		case Value::Type_Float:
+			return v.f != 0.0;
+		case Value::Type_Null:
+			return false;
+		case Value::Type_Undefined:
+			return false;
+//		case Value::Type_Register:
+//			return toFloat();
+		case Value::Type_Boolean:
+			return v.boolean;
+		case Value::Type_Double:
+			return v.d != 0.0;
+		default:
+			return false;
+		}
+	}
 
 	std::vector<Value> stack;
 
 	void stackPush(const char* str) {
 		Value v;
+		v.type = Value::Type_String;
 		v.str = str;
 		stack.push_back(v);
 	}
 	void stackPush(float f) {
 		Value v;
+		v.type = Value::Type_Float;
 		v.f = f;
 		stack.push_back(v);
 	}
 	void stackPush(NullValue null) {
 		Value v;
+		v.type = Value::Type_Null;
 		v.null = null;
 		stack.push_back(v);
 	}
 	void stackPush(UndefinedValue undefined) {
 		Value v;
+		v.type = Value::Type_Undefined;
 		v.undefined = undefined;
 		stack.push_back(v);
 	}
 	void stackPush(RegisterNum registerNum) {
 		Value v;
+		v.type = Value::Type_Register;
 		v.registerNum = registerNum;
 		stack.push_back(v);
 	}
 	void stackPush(bool boolean) {
 		Value v;
+		v.type = Value::Type_Boolean;
 		v.boolean = boolean;
 		stack.push_back(v);
 	}
 	void stackPush(double d) {
 		Value v;
+		v.type = Value::Type_Double;
 		v.d = d;
 		stack.push_back(v);
 	}
 	void stackPush(Object* obj) {
 		Value v;
+		v.type = Value::Type_Object;
 		v.obj = obj;
 		stack.push_back(v);
 	}
 	void stackPush(const std::string& str) {
 		Value v;
+		v.type = Value::Type_String;
 		char* p = new char[str.size()+1];
 		memcpy(p, str.c_str(), str.size()+1);
 		v.str = (const char*) p;
@@ -285,6 +318,7 @@ private:
 
 	Object global;
 	Object local;
+	std::vector<const char*> constantPool;
 	
 	void actionEndFlag() {
 	

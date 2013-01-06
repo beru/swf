@@ -42,9 +42,11 @@ void actionPush() {
 			pData += 4;
 			break;
 		case Constant8:
+			stackPush(constantPool[*pData]);
 			++pData;
 			break;
 		case Constant16:
+			stackPush(constantPool[*(const uint16_t*)pData]);
 			pData += 2;
 			break;
 		}
@@ -105,7 +107,7 @@ void actionOr() {
 
 void actionNot() {
 	Value a = stackPop();
-	stackPush(toFloat(a) == 0.0);
+	stackPush(toBoolean(a) == 0.0);
 }
 
 void actionStringEquals() {
@@ -206,11 +208,17 @@ void actionGetVariable() {
 	if (name == "_global") {
 		stackPush(&global);
 	}else {
-		stackPush(global.GetMember(name));
+		if (global.HasMember(name)) {
+			stackPush(global.GetMember(name));
+		}else {
+			stackPush(UndefinedValue());
+		}
 	}
 }
 
 void actionSetVariable() {
+	Value value = stackPop();
+	Value name = stackPop();
 
 }
 
@@ -255,14 +263,16 @@ void actionWaitForFrame2() {
 }
 
 void actionTrace() {
-
+	Value value = stackPop();
 }
 
 void actionGetTime() {
-
+	DWORD time = GetTickCount();
+	stackPush((double)time);
 }
 
 void actionRandomNumber() {
-
+	double max = toInteger(stackPop());
+	
 }
 

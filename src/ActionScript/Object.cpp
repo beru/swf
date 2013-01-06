@@ -14,6 +14,11 @@ Object* Object::New()
 	return new Object();
 }
 
+bool Object::HasMember(const std::string& name) const
+{
+	return aa.find(name) != aa.end();
+}
+
 Object* Object::GetMember(const std::string& name)
 {
 	return aa[name];
@@ -33,11 +38,6 @@ void Object::SetMember(const std::string& name, Object* o)
 void Object::DeleteMember(const std::string& name)
 {
 	aa.erase(name);
-}
-
-bool Object::In(const std::string& name) const
-{
-	return aa.find(name) != aa.end();
 }
 
 void Object::CallMethod(const std::string& name)

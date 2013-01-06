@@ -13,11 +13,11 @@ struct Object
 
 	static Object* New();
 	
+	bool HasMember(const std::string& name) const;
 	Object* GetMember(const std::string& name);
 	const Object* GetMember(const std::string& name) const;
 	void SetMember(const std::string& name, Object* o);
 	void DeleteMember(const std::string& name);
-	bool In(const std::string& name) const;
 	void CallMethod(const std::string& name);
 	
 	bool IsInstanceOf(const Object& constr);

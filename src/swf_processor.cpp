@@ -107,7 +107,7 @@ void ProcessSWF(IActionProcessor& actionProcessor, const uint8_t* src, size_t le
 		switch (type) {
 		case SWF::TagType::DoAction:
 			{
-				actionProcessor.Process(pStart, buff, len);
+//				actionProcessor.Process(pStart, buff, len);
 				buff += len;
 			}
 			break;
