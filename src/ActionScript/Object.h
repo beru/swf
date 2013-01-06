@@ -10,15 +10,17 @@ struct Object
 {
 	Object();
 	virtual ~Object() {}
+
+	static Object* New();
 	
-	Object& get(const std::string& name);
-	const Object& getMember(const std::string& name) const;
-	void setMember(const std::string& name, const Object& o);
-	void deleteMember(const std::string& name);
-	bool in(const std::string& name) const;
-	void callMethod(const std::string& name);
+	Object* GetMember(const std::string& name);
+	const Object* GetMember(const std::string& name) const;
+	void SetMember(const std::string& name, Object* o);
+	void DeleteMember(const std::string& name);
+	bool In(const std::string& name) const;
+	void CallMethod(const std::string& name);
 	
-	bool isInstanceOf(const Object& constr);
+	bool IsInstanceOf(const Object& constr);
 	
 /*
 	bool addProperty(const std::string& name, const Function& getter, const Function& setter);
@@ -30,7 +32,7 @@ struct Object
 	bool unwatch(const std::string& name);
 */
 protected:
-	typedef std::map<std::string, Object> ContainerT;
+	typedef std::map<std::string, Object*> ContainerT;
 	ContainerT aa;
 };
 

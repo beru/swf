@@ -7,7 +7,7 @@ namespace ActionScript {
 
 struct Date : Object
 {
-	
+	static Object* New();
 };
 
 } // namespace ActionScript

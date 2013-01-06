@@ -7,7 +7,7 @@ namespace ActionScript {
 
 struct String : Object
 {
-	
+	static Object* New();
 };
 
 } // namespace ActionScript

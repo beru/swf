@@ -3,6 +3,7 @@
 #include "swf.h"
 
 namespace SWF {
+namespace ActionScript {
 
 class Interpreter
 {
@@ -16,4 +17,5 @@ private:
 	Impl* pImpl;
 };
 
+} // namespace ActionScript
 } // namespace SWF

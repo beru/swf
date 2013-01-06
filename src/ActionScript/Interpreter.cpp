@@ -3,6 +3,7 @@
 #include "InterpreterImpl.h"
 
 namespace SWF {
+namespace ActionScript {
 
 Interpreter::Interpreter()
 	:
@@ -20,4 +21,5 @@ void Interpreter::Process(const uint8_t* buff, ActionCode::Enum code, size_t rec
 	pImpl->Process(buff, code, recLen);
 }
 
+} // namespace ActionScript
 } // namespace SWF

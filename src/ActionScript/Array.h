@@ -7,7 +7,7 @@ namespace ActionScript {
 
 struct Array : Object
 {
-	
+	static Object* New();
 private:
 	
 };

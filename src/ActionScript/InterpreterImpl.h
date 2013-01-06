@@ -1,13 +1,15 @@
 #pragma once
 
-#include <boost/variant.hpp>
 #include <vector>
 #include <string>
+#include <math.h>
 
 #include "Interpreter.h"
 #include "util.h"
+#include "Object.h"
 
 namespace SWF {
+namespace ActionScript {
 
 class Interpreter::Impl
 {
@@ -141,27 +143,39 @@ private:
 	struct NullValue { };
 	struct UndefinedValue { };
 	struct RegisterNum {
-		RegisterNum(uint8_t n) : n(n) {}
 		uint8_t n;
 	};
-	typedef boost::variant<
-		const char*,
-		float,
-		NullValue,
-		UndefinedValue,
-		RegisterNum,
-		bool,
-		double,
-		std::string
-	> Value;
+	struct Value {
+		enum Type {
+			Type_String,
+			Type_Float,
+			Type_Null,
+			Type_Undefined,
+			Type_Register,
+			Type_Boolean,
+			Type_Double,
+			Type_Object,
+		} type;
+		union {
+			const char* str;
+			float f;
+			NullValue null;
+			UndefinedValue undefined;
+			RegisterNum registerNum;
+			bool boolean;
+			double d;
+			Object* obj;
+		};
+	};
+	
 	double toFloat(const Value& v) {
-		switch (v.which()) {
-		case ActionPushType::Float:
-			return boost::get<float>(v);
-		case ActionPushType::Register:
+		switch (v.type) {
+		case Value::Type_Float:
+			return v.f;
+		case Value::Type_Register:
 //			return toFloat();
-		case ActionPushType::Double:
-			return boost::get<double>(v);
+		case Value::Type_Double:
+			return v.d;
 		default:
 			return 0.0;
 		}
@@ -169,36 +183,88 @@ private:
 	std::string toString(const Value& v) {
 		char buff[32];
 		buff[0] = 0;
-		switch (v.which()) {
-		case ActionPushType::Float:
-			return _gcvt(boost::get<float>(v), 8, buff);
+		switch (v.type) {
+		case Value::Type_Float:
+			return _gcvt(v.f, 8, buff);
 		case ActionPushType::Null:
 			return "[object Null]";
 		case ActionPushType::Undefined:
 			return "[object Undefined]";
-		case ActionPushType::Register:
+		case Value::Type_Register:
 //			return toFloat();
-		case ActionPushType::Double:
-			return _gcvt(boost::get<double>(v), 8, buff);
+		case Value::Type_Double:
+			return _gcvt(v.d, 8, buff);
 		default:
 			return "";
 		}
 	}
 	double toInteger(const Value& v) {
-		switch (v.which()) {
-		case ActionPushType::Float:
-			return fabs(boost::get<float>(v));
-		case ActionPushType::Register:
+		switch (v.type) {
+		case Value::Type_Float:
+			return fabs(v.f);
+		case Value::Type_Register:
 //			return toFloat();
-		case ActionPushType::Double:
-			return fabs(boost::get<double>(v));
+		case Value::Type_Double:
+			return fabs(v.d);
 		default:
 			return 0;
 		}
 	}
+	Object* toObject(const Value& v) {
+		switch (v.type) {
+//		case Value::Type_Float:
+//			return fabs(v.f);
+//		case Value::Type_Register:
+//			return toFloat();
+//		case Value::Type_Double:
+//			return fabs(v.d);
+		case Value::Type_Object:
+			return v.obj;
+//		default:
+//			return 0;
+		}
+	}
+
 	std::vector<Value> stack;
 
-	void stackPush(const Value& v) {
+	void stackPush(const char* str) {
+		Value v;
+		v.str = str;
+		stack.push_back(v);
+	}
+	void stackPush(float f) {
+		Value v;
+		v.f = f;
+		stack.push_back(v);
+	}
+	void stackPush(NullValue null) {
+		Value v;
+		v.null = null;
+		stack.push_back(v);
+	}
+	void stackPush(UndefinedValue undefined) {
+		Value v;
+		v.undefined = undefined;
+		stack.push_back(v);
+	}
+	void stackPush(RegisterNum registerNum) {
+		Value v;
+		v.registerNum = registerNum;
+		stack.push_back(v);
+	}
+	void stackPush(bool boolean) {
+		Value v;
+		v.boolean = boolean;
+		stack.push_back(v);
+	}
+	void stackPush(double d) {
+		Value v;
+		v.d = d;
+		stack.push_back(v);
+	}
+	void stackPush(Object* obj) {
+		Value v;
+		v.obj = obj;
 		stack.push_back(v);
 	}
 	Value stackPop() {
@@ -206,400 +272,21 @@ private:
 		stack.pop_back();
 		return ret;
 	}
+
+	Object global;
+	Object local;
 	
 	void actionEndFlag() {
 	
 	}
-	// SWF 3 actions
-	void actionGotoFrame() {
-		throw "not implemented";
-	}
-	void actionPrevFrame() {
-		throw "not implemented";
-	}
-	void actionPlay() {
-		throw "not implemented";
-	}
-	void actionStop() {
-		throw "not implemented";
-	}
-	void actionToggleQuality() {
-		throw "not implemented";
-	}
-	void actionStopSounds() {
-		throw "not implemented";
-	}
-	void actionWaitFrame() {
-		throw "not implemented";
-	}
-	void actionSetTarget() {
-		throw "not implemented";
-	}
-	void actionGoToLabel() {
-		throw "not implemented";
-	}
-	// SWF 4 actions
-	void actionPush() {
-		using namespace ActionPushType;
-		const uint8_t* pEnd = buff + 3 + recLen;
-		const uint8_t* pData = buff + 3;
-		while (pData < pEnd) {
-			Enum type = (ActionPushType::Enum) *pData++;
-			switch (type) {
-			case String:
-				stackPush((const char*)pData);
-				pData += strlen((const char*)pData) + 1;
-				break;
-			case Float:
-				stackPush(*(const float*)pData);
-				pData += 4;
-				break;
-			case Null:
-				stackPush(NullValue());
-				break;
-			case Undefined:
-				stackPush(UndefinedValue());
-				break;
-			case Register:
-				stackPush(RegisterNum(*(const uint8_t*)pData));
-				++pData;
-				break;
-			case Boolean:
-				stackPush((*(const uint8_t*)pData == 0) ? true : false);
-				++pData;
-				break;
-			case Double:
-				stackPush(*(const double*)pData);
-				pData += 8;
-				break;
-			case Integer:
-				stackPush((double)*(const uint32_t*)pData);
-				pData += 4;
-				break;
-			case Constant8:
-				++pData;
-				break;
-			case Constant16:
-				pData += 2;
-				break;
-			}
-		}
-	}
-	void actionPop() {
-		stackPop();
-	}
-	void actionAdd() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(a) + toFloat(b));
-	}
-	void actionSubtract() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(b) - toFloat(a));
-	}
-	void actionMultiply() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(a) * toFloat(b));
-	}
-	void actionDivide() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(b) / toFloat(a));
-	}
-	void actionEquals() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(a) == toFloat(b));
-	}
-	void actionLess() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(b) < toFloat(a));
-	}
-	void actionAnd() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(a) != 0.0 && toFloat(b) != 0.0);
-	}
-	void actionOr() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toFloat(a) != 0.0 || toFloat(b) != 0.0);
-	}
-	void actionNot() {
-		Value a = stackPop();
-		stackPush(toFloat(a) == 0.0);
-	}
-	void actionStringEquals() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toString(a) == toString(b));
-	}
-	void actionStringLength() {
-		Value a = stackPop();
-		stackPush((double)strlen(toString(a).c_str()));
-	
-	}
-	void actionStringAdd() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toString(b) + toString(a));
-	}
-	void actionStringExtract() {
-		Value count = stackPop();
-		Value index = stackPop();
-		Value string = stackPop();
-		std::string str = toString(string);
-		stackPush(str.substr(toInteger(index), toInteger(count)));
-	}
-	void actionStringLess() {
-		Value a = stackPop();
-		Value b = stackPop();
-		stackPush(toString(b) < toString(a));
-	}
-	void actionMBStringLength() {
-		Value a = stackPop();
-		stackPush((double)utf8_to_utf16(toString(a)).size());
-	}
-	void actionMBStringExtract() {
-		Value count = stackPop();
-		Value index = stackPop();
-		Value string = stackPop();
-		stackPush(utf16_to_utf8(utf8_to_utf16(toString(string)).substr(toInteger(index), toInteger(count))));
-	}
-	void actionToInteger() {
-		Value a = stackPop();
-		stackPush(fabs(toFloat(a)));
-	}
-	void actionCharToAscii() {
-		Value a = stackPop();
-		std::string s = toString(a);
-		int code = 0;
-		if (s.size()) {
-			code = s[0];
-		}
-		stackPush((double)code);
-	}
-	void actionAsciiToChar() {
-		Value a = stackPop();
-		stackPush(std::string((char)toInteger(a), 1));
-	}
-	void actionMBCharToAscii() {
-		Value a = stackPop();
-		std::wstring s = utf8_to_utf16(toString(a));
-		int code = 0;
-		if (s.size()) {
-			code = s[0];
-		}
-		stackPush((double)code);
-	}
-	void actionMBAsciiToChar() {
-		Value a = stackPop();
-		stackPush(utf16_to_utf8(std::wstring((char)toInteger(a), 1)));
-	}
-	void actionJump() {
-		throw "not implemented";
-	}
-	void actionIf() {
-		Value a = stackPop();
-		throw "not implemented";
-	}
-	void actionCall() {
-		throw "not implemented";
-	}
-	void actionGetVariable() {
-		
-	}
-	void actionSetVariable() {
-	
-	}
-	void actionGetURL2() {
-		throw "not implemented";
-	}
-	void actionGotoFrame2() {
-		throw "not implemented";
-	}
-	void actionSetTarget2() {
-		throw "not implemented";
-	}
-	void actionGetProperty() {
-	
-	}
-	void actionSetProperty() {
-	
-	}
-	void actionCloneSprite() {
-		throw "not implemented";
-	}
-	void actionRemoveSprite() {
-		throw "not implemented";
-	}
-	void actionStartDrag() {
-		throw "not implemented";
-	}
-	void actionEndDrag() {
-		throw "not implemented";
-	}
-	void actionWaitForFrame2() {
-		throw "not implemented";
-	}
-	void actionTrace() {
-	
-	}
-	void actionGetTime() {
-	
-	}
-	void actionRandomNumber() {
-	
-	}
-	
-	// SWF 5 actions
-	void actionCallFunction() {
-	
-	}
-	void actionCallMethod() {
-	
-	}
-	void actionConstantPool() {
-	
-	}
-	void actionDefineFunction() {
-	
-	}
-	void actionDefineLocal() {
-	
-	}
-	void actionDefineLocal2() {
-	
-	}
-	void actionDelete() {
-	
-	}
-	void actionDelete2() {
-	
-	}
-	void actionEnumerate() {
-	
-	}
-	void actionEquals2() {
-	
-	}
-	void actionGetMember() {
-	
-	}
-	void actionInitArray() {
-	
-	}
-	void actionInitObject() {
-	
-	}
-	void actionNewMethod() {
-	
-	}
-	void actionNewObject() {
-	
-	}
-	void actionSetMember() {
-	
-	}
-	void actionTargetPath() {
-	
-	}
-	void actionWith() {
-	
-	}
-	void actionToNumber() {
-	
-	}
-	void actionToString() {
-	
-	}
-	void actionTypeOf() {
-	
-	}
-	void actionAdd2() {
-	
-	}
-	void actionLess2() {
-	
-	}
-	void actionModulo() {
-	
-	}
-	void actionBitAnd() {
-	
-	}
-	void actionBitLShift() {
-	
-	}
-	void actionBitOr() {
-	
-	}
-	void actionBitRShift() {
-	
-	}
-	void actionBitURShift() {
-	
-	}
-	void actionBitXor() {
-	
-	}
-	void actionDecrement() {
-	
-	}
-	void actionIncrement() {
-	
-	}
-	void actionPushDuplicate() {
-	
-	}
-	void actionReturn() {
-	
-	}
-	void actionStackSwap() {
-	
-	}
-	void actionStoreRegister() {
-	
-	}
-	// SWF 6 actions
-	void actionInstanceOf() {
-	
-	}
-	void actionEnumerate2() {
-	
-	}
-	void actionStrictEquals() {
-	
-	}
-	void actionGreater() {
-	
-	}
-	void actionStringGreater() {
-	
-	}
-	// SWF 7 actions
-	void actionDefineFunction2() {
-	
-	}
-	void actionExtends() {
-	
-	}
-	void actionCastOp() {
-	
-	}
-	void actionImplementsOp() {
-	
-	}
-	void actionTry() {
-	
-	}
-	void actionThrow() {
-	
-	}
+
+#include "action/swf3.h"
+#include "action/swf4.h"
+#include "action/swf5.h"
+#include "action/swf6.h"
+#include "action/swf7.h"
 
 };
 
+} // namespace ActionScript
 } // namespace SWF

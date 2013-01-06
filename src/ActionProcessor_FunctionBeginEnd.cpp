@@ -5,7 +5,7 @@
 
 #include "ActionScript/Interpreter.h"
 
-SWF::Interpreter interpreter;
+SWF::ActionScript::Interpreter interpreter;
 
 // override
 // virtual

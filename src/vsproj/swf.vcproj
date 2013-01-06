@@ -332,6 +332,30 @@
 				RelativePath="..\ActionScript\String.h"
 				>
 			</File>
+			<Filter
+				Name="action"
+				>
+				<File
+					RelativePath="..\ActionScript\action\swf3.h"
+					>
+				</File>
+				<File
+					RelativePath="..\ActionScript\action\swf4.h"
+					>
+				</File>
+				<File
+					RelativePath="..\ActionScript\action\swf5.h"
+					>
+				</File>
+				<File
+					RelativePath="..\ActionScript\action\swf6.h"
+					>
+				</File>
+				<File
+					RelativePath="..\ActionScript\action\swf7.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

@@ -7,7 +7,7 @@ namespace ActionScript {
 
 struct Boolean : Object
 {
-	
+	static Object* New();
 };
 
 } // namespace ActionScript
