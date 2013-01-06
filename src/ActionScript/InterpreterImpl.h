@@ -267,6 +267,16 @@ private:
 		v.obj = obj;
 		stack.push_back(v);
 	}
+	void stackPush(const std::string& str) {
+		Value v;
+		char* p = new char[str.size()+1];
+		memcpy(p, str.c_str(), str.size()+1);
+		v.str = (const char*) p;
+		stack.push_back(v);
+	}
+	void stackPush(const Value& v) {
+		stack.push_back(v);
+	}
 	Value stackPop() {
 		Value ret = stack.back();
 		stack.pop_back();
