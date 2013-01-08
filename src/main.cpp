@@ -52,9 +52,9 @@ int main(int argc, char* argv[])
 		srcSwfBuff.resize(sz);
 		fread(&srcSwfBuff[0], 1, sz, f);
 		fclose(f);
-
-//		ActionProcessor_TraceFileLine ap(dstSwfBuff, swdInfo);
-		ActionProcessor_FunctionBeginEnd ap("onFuncBegin", "onFuncEnd", dstSwfBuff);
+		
+		ActionProcessor_TraceFileLine ap(dstSwfBuff, swdInfo);
+//		ActionProcessor_FunctionBeginEnd ap("onFuncBegin", "onFuncEnd", dstSwfBuff);
 		ProcessSWF(ap, &srcSwfBuff[0], sz, dstSwfBuff);
 
 		f = fopen(dstFileName, "wb");

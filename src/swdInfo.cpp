@@ -9,7 +9,7 @@
 
 bool compare(const SWDInfo::Offset& lhs, const SWDInfo::Offset& rhs)
 {
-return lhs.swf < rhs.swf;
+	return lhs.swf < rhs.swf;
 }
 
 void SWDInfo::Read(const uint8_t* buff, size_t length)

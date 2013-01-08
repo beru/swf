@@ -2,6 +2,23 @@
 #include "ActionProcessor_TraceFileLine.h"
 
 #include "swf.h"
+#include <algorithm>
+
+struct SWDInfoOffsetLessThan
+{
+    bool operator() (const SWDInfo::Offset& left, const SWDInfo::Offset& right)
+    {
+		return left.swf < right.swf;
+    }
+    bool operator() (const SWDInfo::Offset& left, float right)
+    {
+        return left.swf < right;
+    }
+    bool operator() (float left, const SWDInfo::Offset& right)
+    {
+        return left < right.swf;
+    }
+};
 
 // override
 // virtual
@@ -99,13 +116,13 @@ uint8_t ActionProcessor_TraceFileLine::getLineNo(const uint8_t* buff)
 {
 	size_t offset = buff - pStart;
 	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;
-	for (size_t i=0; i<offsets.size(); ++i) {
-		const SWDInfo::Offset& o = offsets[i];
-		if (o.swf > offset) {
-			if (i) {
-				return offsets[i-1].line;
-			}
-		}
+	if (offsets.size() == 0) {
+		return 0;
 	}
-	return 0;
+	std::vector<SWDInfo::Offset>::const_iterator it = std::lower_bound(offsets.begin(), offsets.end(), offset, SWDInfoOffsetLessThan());
+	if (it == offsets.end() || it == offsets.begin()) {
+		return offsets.front().line;
+	}else {
+		(--it)->line;
+	}
 }
