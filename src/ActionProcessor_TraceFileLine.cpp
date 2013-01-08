@@ -6,13 +6,13 @@
 // override
 // virtual
 void ActionProcessor_TraceFileLine::Process(
-	const uint8_t* const pStart,
+	const uint8_t* const pFileStart,
 	const uint8_t* buff,
 	size_t len
 	)
 {
-	this->pStart = pStart;
-	fileName = findFileName(swdInfo, buff - pStart);
+	this->pFileStart = pFileStart;
+	fileName = findFileName(swdInfo, buff - pFileStart);
 	fileName += " ";
 	iterate(buff, len);
 }
@@ -97,7 +97,7 @@ void ActionProcessor_TraceFileLine::pushString(const char* str)
 
 uint8_t ActionProcessor_TraceFileLine::getLineNo(const uint8_t* buff)
 {
-	size_t offset = buff - pStart;
+	size_t offset = buff - pFileStart;
 	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;
 	for (size_t i=0; i<offsets.size(); ++i) {
 		const SWDInfo::Offset& o = offsets[i];

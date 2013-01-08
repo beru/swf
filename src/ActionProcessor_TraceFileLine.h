@@ -20,7 +20,7 @@ public:
 	// override
 	virtual
 	void Process(
-		const uint8_t* const pStart,
+		const uint8_t* const pFileStart,
 		const uint8_t* buff,
 		size_t len
 		);
@@ -40,7 +40,7 @@ private:
 	void pushString(const char* str);
 	uint8_t getLineNo(const uint8_t* buff);
 
-	const uint8_t* pStart;
+	const uint8_t* pFileStart;
 	const SWDInfo& swdInfo;
 	std::vector<uint8_t>& dst;
 	std::string fileName;

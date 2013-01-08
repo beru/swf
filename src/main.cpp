@@ -5,6 +5,7 @@
 #include "swf_processor.h"
 #include "ActionProcessor_TraceFileLine.h"
 #include "ActionProcessor_FunctionBeginEnd.h"
+#include "ActionProcessor_CollectInfo.h"
 
 static inline
 size_t getFileSize(FILE* file)
@@ -54,7 +55,8 @@ int main(int argc, char* argv[])
 		fclose(f);
 
 //		ActionProcessor_TraceFileLine ap(dstSwfBuff, swdInfo);
-		ActionProcessor_FunctionBeginEnd ap("onFuncBegin", "onFuncEnd", dstSwfBuff);
+//		ActionProcessor_FunctionBeginEnd ap("onFuncBegin", "onFuncEnd", dstSwfBuff);
+		ActionProcessor_CollectInfo ap;
 		ProcessSWF(ap, &srcSwfBuff[0], sz, dstSwfBuff);
 
 		f = fopen(dstFileName, "wb");

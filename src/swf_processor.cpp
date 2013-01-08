@@ -78,7 +78,7 @@ void ProcessSWF(IActionProcessor& actionProcessor, const uint8_t* src, size_t le
 		return;
 	}
 
-	const uint8_t* const pStart = buff;
+	const uint8_t* const pFileStart = buff;
 
 	// header
 	append(dst, buff, sizeof(SWF::Header));
@@ -107,7 +107,7 @@ void ProcessSWF(IActionProcessor& actionProcessor, const uint8_t* src, size_t le
 		switch (type) {
 		case SWF::TagType::DoAction:
 			{
-//				actionProcessor.Process(pStart, buff, len);
+				actionProcessor.Process(pFileStart, buff, len);
 				buff += len;
 			}
 			break;
@@ -115,7 +115,7 @@ void ProcessSWF(IActionProcessor& actionProcessor, const uint8_t* src, size_t le
 			{
 				uint16_t spriteID = *(const uint16_t*) buff;
 				append(dst, buff, 2);
-				actionProcessor.Process(pStart, buff+2, len-2);
+				actionProcessor.Process(pFileStart, buff+2, len-2);
 				buff += len;
 			}
 			break;
@@ -127,7 +127,7 @@ void ProcessSWF(IActionProcessor& actionProcessor, const uint8_t* src, size_t le
 		if (tagLenPos) {
 			*(uint32_t*)&dst[tagLenPos] = dst.size() - (tagLenPos+4);
 		}
-	} while (buff - pStart < length);
+	} while (buff - pFileStart < length);
 
 	SWF::Header* pHeader = (SWF::Header*) &dst[0];
 	pHeader->fileLength = dst.size();
