@@ -10,12 +10,12 @@ SWF::ActionScript::Interpreter interpreter;
 // override
 // virtual
 void ActionProcessor_FunctionBeginEnd::Process(
-	const uint8_t* const pStart,
+	const uint8_t* const pFileStart,
 	const uint8_t* buff,
 	size_t len
 	)
 {
-	this->pStart = pStart;
+	this->pFileStart = pFileStart;
 	iterate(buff, len);
 }
 

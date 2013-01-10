@@ -21,7 +21,7 @@ public:
 	// override
 	virtual
 	void Process(
-		const uint8_t* const pStart,
+		const uint8_t* const pFileStart,
 		const uint8_t* buff,
 		size_t len
 		);
@@ -44,7 +44,7 @@ private:
 
 	void callFunction(const char* callFuncName);
 
-	const uint8_t* pStart;
+	const uint8_t* pFileStart;
 	std::vector<uint8_t>& dst;
 
 	const char* beginFuncName;

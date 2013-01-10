@@ -20,18 +20,28 @@ struct SWDInfoOffsetLessThan
     }
 };
 
+#include "ActionProcessor_CollectInfo.h"
+
 // override
 // virtual
 void ActionProcessor_TraceFileLine::Process(
-	const uint8_t* const pStart,
+	const uint8_t* const pFileStart,
 	const uint8_t* buff,
 	size_t len
 	)
 {
-	this->pStart = pStart;
-	fileName = findFileName(swdInfo, buff - pStart);
+	ActionProcessor_CollectInfo firstPass;
+	firstPass.Process(pFileStart, buff, len);
+	newPositions = orgPositions = firstPass.positions;
+	
+	this->pFileStart = pFileStart;
+	this->pBuffStart = buff;
+	this->dstStartSize = dst.size();
+	fileName = findFileName(swdInfo, buff - pFileStart);
 	fileName += " ";
 	iterate(buff, len);
+	
+	updatePositions();
 }
 
 void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
@@ -81,11 +91,18 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 				size_t lineNo = getLineNo(buff);
 				char str[512];
 				sprintf(str, "%s%d ", fileName.c_str(), lineNo);
+				size_t before = dst.size();
+				{
+					pushString(str);
+					append(SWF::ActionCode::StackSwap);
+					append(SWF::ActionCode::StringAdd);
+				}
+				size_t after = dst.size();
+				checkPositions(buff, after - before);
+				{
+					append(SWF::ActionCode::Trace);
+				}
 				++buff;
-				pushString(str);
-				append(SWF::ActionCode::StackSwap);
-				append(SWF::ActionCode::StringAdd);
-				append(SWF::ActionCode::Trace);
 			}
 			break;
 		default:
@@ -114,7 +131,7 @@ void ActionProcessor_TraceFileLine::pushString(const char* str)
 
 uint8_t ActionProcessor_TraceFileLine::getLineNo(const uint8_t* buff)
 {
-	size_t offset = buff - pStart;
+	size_t offset = buff - pFileStart;
 	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;
 	if (offsets.size() == 0) {
 		return 0;
@@ -126,3 +143,42 @@ uint8_t ActionProcessor_TraceFileLine::getLineNo(const uint8_t* buff)
 		(--it)->line;
 	}
 }
+
+void ActionProcessor_TraceFileLine::checkPositions(const uint8_t* buff, int addedSize)
+{
+	uint16_t pos = buff - pBuffStart;
+	for (size_t i=0; i<orgPositions.size(); ++i) {
+		const PositioningInfo& orgPos = orgPositions[i];
+		PositioningInfo& newPos = newPositions[i];
+		if (orgPos.fieldOffset >= pos) {
+			newPos.fieldOffset += addedSize;
+		}
+		if (orgPos.fromOffset >= pos) {
+			newPos.fromOffset += addedSize;
+		}
+		if (orgPos.toOffset >= pos) {
+			newPos.toOffset += addedSize;
+		}
+	}
+}
+
+void ActionProcessor_TraceFileLine::updatePositions()
+{
+	uint8_t* pDstBuffStart = &(this->dst[this->dstStartSize]);
+	for (size_t i=0; i<newPositions.size(); ++i) {
+		const PositioningInfo& newPos = newPositions[i];
+		int distance = newPos.toOffset - newPos.fromOffset;
+		if (newPos.isSignedField) {
+			int16_t* pDst = (int16_t*)(pDstBuffStart + newPos.fieldOffset);
+			if (newPos.fromOffset < newPos.fieldOffset) {
+				// minus
+				distance = -distance;
+			}
+			*pDst = distance;
+		}else {
+			uint16_t* pDst = (uint16_t*)(pDstBuffStart + newPos.fieldOffset);
+			*pDst = distance;
+		}
+	}
+}
+

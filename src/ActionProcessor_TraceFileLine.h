@@ -4,6 +4,8 @@
 
 #include "swdInfo.h"
 
+#include "ActionProcessor_CollectInfo.h"
+
 class ActionProcessor_TraceFileLine : public IActionProcessor
 {
 public:
@@ -20,7 +22,7 @@ public:
 	// override
 	virtual
 	void Process(
-		const uint8_t* const pStart,
+		const uint8_t* const pFileStart,
 		const uint8_t* buff,
 		size_t len
 		);
@@ -39,11 +41,18 @@ private:
 	
 	void pushString(const char* str);
 	uint8_t getLineNo(const uint8_t* buff);
+	void checkPositions(const uint8_t* buff, int addedSize);
+	void updatePositions();
 
-	const uint8_t* pStart;
+	const uint8_t* pFileStart;
+	const uint8_t* pBuffStart;
 	const SWDInfo& swdInfo;
 	std::vector<uint8_t>& dst;
 	std::string fileName;
+	
+	std::vector<PositioningInfo> orgPositions;
+	std::vector<PositioningInfo> newPositions;
+	size_t dstStartSize;
 };
 
 

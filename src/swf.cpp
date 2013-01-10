@@ -1,3 +1,0 @@
-
-#include "swf.h"
-
