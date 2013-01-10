@@ -104,6 +104,7 @@ void ProcessSWF(IActionProcessor& actionProcessor, const uint8_t* src, size_t le
 			append(dst, buff, 4);
 			buff += 4;
 		}
+
 		switch (type) {
 		case SWF::TagType::DoAction:
 			{
