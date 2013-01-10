@@ -40,7 +40,7 @@ private:
 	}
 	
 	void pushString(const char* str);
-	uint8_t getLineNo(const uint8_t* buff);
+	const SWDInfo::Offset* getSWDInfo(const uint8_t* buff);
 	void checkPositions(const uint8_t* buff, int addedSize);
 	void updatePositions();
 
@@ -48,7 +48,6 @@ private:
 	const uint8_t* pBuffStart;
 	const SWDInfo& swdInfo;
 	std::vector<uint8_t>& dst;
-	std::string fileName;
 	
 	std::vector<PositioningInfo> orgPositions;
 	std::vector<PositioningInfo> newPositions;

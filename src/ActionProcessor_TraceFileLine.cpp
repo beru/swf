@@ -1,5 +1,6 @@
 
 #include "ActionProcessor_TraceFileLine.h"
+#include "ActionProcessor_CollectInfo.h"
 
 #include "swf.h"
 #include <algorithm>
@@ -10,17 +11,15 @@ struct SWDInfoOffsetLessThan
     {
 		return left.swf < right.swf;
     }
-    bool operator() (const SWDInfo::Offset& left, float right)
+    bool operator() (const SWDInfo::Offset& left, uint32_t right)
     {
         return left.swf < right;
     }
-    bool operator() (float left, const SWDInfo::Offset& right)
+    bool operator() (uint32_t left, const SWDInfo::Offset& right)
     {
         return left < right.swf;
     }
 };
-
-#include "ActionProcessor_CollectInfo.h"
 
 // override
 // virtual
@@ -37,8 +36,6 @@ void ActionProcessor_TraceFileLine::Process(
 	this->pFileStart = pFileStart;
 	this->pBuffStart = buff;
 	this->dstStartSize = dst.size();
-	fileName = findFileName(swdInfo, buff - pFileStart);
-	fileName += " ";
 	iterate(buff, len);
 	
 	updatePositions();
@@ -88,9 +85,10 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 //			break;
 		case SWF::ActionCode::Trace:
 			{
-				size_t lineNo = getLineNo(buff);
+				const SWDInfo::Offset* pOffset = getSWDInfo(buff);
+				const std::map<uint32_t, SWDInfo::File>::const_iterator it = swdInfo.files.find(pOffset->file);
 				char str[512];
-				sprintf(str, "%s%d ", fileName.c_str(), lineNo);
+				sprintf(str, "%s %d ", it->second.name, pOffset->line);
 				size_t before = dst.size();
 				{
 					pushString(str);
@@ -129,18 +127,20 @@ void ActionProcessor_TraceFileLine::pushString(const char* str)
 
 }
 
-uint8_t ActionProcessor_TraceFileLine::getLineNo(const uint8_t* buff)
+const SWDInfo::Offset* ActionProcessor_TraceFileLine::getSWDInfo(const uint8_t* buff)
 {
 	size_t offset = buff - pFileStart;
 	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;
 	if (offsets.size() == 0) {
-		return 0;
+		return NULL;
 	}
 	std::vector<SWDInfo::Offset>::const_iterator it = std::lower_bound(offsets.begin(), offsets.end(), offset, SWDInfoOffsetLessThan());
-	if (it == offsets.end() || it == offsets.begin()) {
-		return offsets.front().line;
+	if (it == offsets.begin()) {
+		return &offsets.front();
+	}else if (it == offsets.end()) {
+		return &offsets.back();
 	}else {
-		(--it)->line;
+		return &*(--it);
 	}
 }
 

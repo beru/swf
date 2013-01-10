@@ -45,7 +45,7 @@ void ActionProcessor_CollectInfo::Process(
 			recLen = *(const uint16_t*)(buff+1);
 		}
 		const uint8_t* buffNext = buff + 3 + recLen;
-		switch (code) {
+		switch (ecode) {
 		case SWF::ActionCode::Jump:
 		case SWF::ActionCode::If:
 			{
@@ -57,7 +57,7 @@ void ActionProcessor_CollectInfo::Process(
 					info.fromOffset = base;
 					info.toOffset = base + branchOffset;
 				}else {
-					info.fromOffset = base - branchOffset;
+					info.fromOffset = base + branchOffset;
 					info.toOffset = base;
 				}
 				positions.push_back(info);

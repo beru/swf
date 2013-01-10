@@ -2,6 +2,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 struct SWDInfo
 {
@@ -20,11 +21,10 @@ struct SWDInfo
 		uint32_t swf;
 	};
 	
-	std::vector<File> files;
+	std::map<uint32_t, File> files;
 	std::vector<Offset> offsets;
 	std::vector<uint16_t> breakPoints;
 	
 	void Read(const uint8_t* buff, size_t length);
 };
 
-const char* findFileName(const SWDInfo& swdInfo, size_t pos);
