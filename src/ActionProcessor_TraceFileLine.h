@@ -49,7 +49,7 @@ private:
 	const SWDInfo& swdInfo;
 	std::vector<uint8_t>& dst;
 	
-	std::vector<PositioningInfo> orgPositions;
+	ActionProcessor_CollectInfo firstPass;
 	std::vector<PositioningInfo> newPositions;
 	size_t dstStartSize;
 };

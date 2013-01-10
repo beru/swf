@@ -1,6 +1,5 @@
 
 #include "ActionProcessor_TraceFileLine.h"
-#include "ActionProcessor_CollectInfo.h"
 
 #include "swf.h"
 #include <algorithm>
@@ -29,9 +28,8 @@ void ActionProcessor_TraceFileLine::Process(
 	size_t len
 	)
 {
-	ActionProcessor_CollectInfo firstPass;
 	firstPass.Process(pFileStart, buff, len);
-	newPositions = orgPositions = firstPass.positions;
+	newPositions = firstPass.positions;
 	
 	this->pFileStart = pFileStart;
 	this->pBuffStart = buff;
@@ -147,7 +145,9 @@ const SWDInfo::Offset* ActionProcessor_TraceFileLine::getSWDInfo(const uint8_t* 
 void ActionProcessor_TraceFileLine::checkPositions(const uint8_t* buff, int addedSize)
 {
 	uint16_t pos = buff - pBuffStart;
-	for (size_t i=0; i<orgPositions.size(); ++i) {
+	const std::vector<PositioningInfo>& orgPositions = firstPass.positions;
+	const size_t orgPosCnt = orgPositions.size();
+	for (size_t i=0; i<orgPosCnt; ++i) {
 		const PositioningInfo& orgPos = orgPositions[i];
 		PositioningInfo& newPos = newPositions[i];
 		if (orgPos.fieldOffset >= pos) {
