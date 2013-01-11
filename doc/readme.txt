@@ -14,9 +14,12 @@ swf crumb
 ActionScript2までの対応です。まだActionScript3には対応していません。
 
 入力swfファイルに対応するswdファイルが同じフォルダに無いと正しく動作しません。
-パブリッシュ設定のデバッグを許可にチェックを入れるとデバッグ情報ファイルのswdが作られますが、この際swf中のActionScriptの最適化は行われず、DefineFunctionのみが使われるようです。（Flash CS6で確認）
+パブリッシュ設定のデバッグを許可にチェックを入れるとデバッグ情報ファイルのswdがswfと同じ場所に作られます。
+この際swf中のActionScriptのバイトコードでDefineFunction2は使われずにDefineFunctionのみが使われるようです。（Flash CS6で確認）
 
-ActionConstantPoolを使っていない為、出力swfのファイルサイズが増えやすいです。
+swdファイルが正しく作られるようにする為に、メニューの [制御] => [パブリッシュキャッシュをクリア] を実行した後にパブリッシュを行って下さい。（Adobe CS6で確認）
+
+この改変ツールではActionConstantPoolレコードを使わないでTrace出力している為、改変して出力するswfのファイルサイズが大きく増えやすいです。
 
 ・ソースコードについて
 https://github.com/beru/swf
