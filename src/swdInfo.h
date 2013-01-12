@@ -26,5 +26,7 @@ struct SWDInfo
 	std::vector<uint16_t> breakPoints;
 	
 	void Read(const uint8_t* buff, size_t length);
+	const Offset* FindOffset(uint32_t swfPos) const;
+	
 };
 

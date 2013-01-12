@@ -4,21 +4,6 @@
 #include "swf.h"
 #include <algorithm>
 
-struct SWDInfoOffsetLessThan
-{
-    bool operator() (const SWDInfo::Offset& left, const SWDInfo::Offset& right)
-    {
-		return left.swf < right.swf;
-    }
-    bool operator() (const SWDInfo::Offset& left, uint32_t right)
-    {
-        return left.swf < right;
-    }
-    bool operator() (uint32_t left, const SWDInfo::Offset& right)
-    {
-        return left < right.swf;
-    }
-};
 
 // override
 // virtual
@@ -52,6 +37,31 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 			recLen = *(const uint16_t*)(buff+1);
 		}
 		switch (ecode) {
+		case SWF::ActionCode::ConstantPool:
+			{
+				append(ecode); ++buff;
+				size_t recLenPos = dst.size();
+				append(buff, 2); buff += 2;
+				constantPoolNewEntryIndex = *(const uint16_t*)buff;
+				size_t countPos = dst.size();
+				append(buff, recLen); buff += recLen;
+				size_t prevSize = dst.size();
+				for (size_t i=0; i<firstPass.fileIds.size(); ++i) {
+					uint32_t id = firstPass.fileIds[i];
+					const std::map<uint32_t, SWDInfo::File>::const_iterator it = swdInfo.files.find(id);
+					if (it == swdInfo.files.end()) {
+						puts("SWD Script entry not found.\n");
+						append(0);
+					}else {
+						append((const uint8_t*) it->second.name, strlen(it->second.name)+1);
+					}
+				}
+				size_t plusSize = dst.size() - prevSize;
+				*(uint16_t*)&dst[recLenPos] += plusSize;
+				*(uint16_t*)&dst[countPos] = constantPoolNewEntryIndex + firstPass.fileIds.size();
+				checkPositions(buff, plusSize);
+			}
+			break;
 		case SWF::ActionCode::DefineFunction:
 			{
 				append(buff, 3);
@@ -85,23 +95,21 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 //			break;
 		case SWF::ActionCode::Trace:
 			{
-				const SWDInfo::Offset* pOffset = getSWDInfo(buff);
+				const SWDInfo::Offset* pOffset = swdInfo.FindOffset(buff - pFileStart);
 				if (pOffset->file == lastTraceOffset.file && pOffset->line == lastTraceOffset.line) {
 					puts("SWD file may contain wrong info. Multiple Trace calls hit the same offset data in SWD file. \n");
 				}
 				lastTraceOffset = *pOffset;
-				const std::map<uint32_t, SWDInfo::File>::const_iterator it = swdInfo.files.find(pOffset->file);
-				if (it == swdInfo.files.end()) {
-					puts("SWD Script entry not found.\n");
-				}else {
-					char str[512];
-					sprintf(str, "%s %d ", it->second.name, pOffset->line);
+				std::vector<uint32_t>::const_iterator it = std::find(firstPass.fileIds.begin(), firstPass.fileIds.end(), pOffset->file);
+				if (it != firstPass.fileIds.end()) {
 					size_t before = dst.size();
-					{
-						pushString(str);
-						append(SWF::ActionCode::StackSwap);
-						append(SWF::ActionCode::StringAdd);
-					}
+					pushConstant(constantPoolNewEntryIndex + (it - firstPass.fileIds.begin()));
+					char str[32];
+					sprintf(str, " %d ", pOffset->line);
+					pushString(str);
+					append(SWF::ActionCode::StringAdd);
+					append(SWF::ActionCode::StackSwap);
+					append(SWF::ActionCode::StringAdd);
 					size_t after = dst.size();
 					checkPositions(buff, after - before);
 				}
@@ -133,20 +141,17 @@ void ActionProcessor_TraceFileLine::pushString(const char* str)
 
 }
 
-const SWDInfo::Offset* ActionProcessor_TraceFileLine::getSWDInfo(const uint8_t* buff)
+void ActionProcessor_TraceFileLine::pushConstant(uint16_t idx)
 {
-	size_t offset = buff - pFileStart;
-	const std::vector<SWDInfo::Offset>& offsets = swdInfo.offsets;
-	if (offsets.size() == 0) {
-		return NULL;
-	}
-	std::vector<SWDInfo::Offset>::const_iterator it = std::lower_bound(offsets.begin(), offsets.end(), offset, SWDInfoOffsetLessThan());
-	if (it == offsets.begin()) {
-		return &offsets.front();
-	}else if (it == offsets.end()) {
-		return &offsets.back();
+	append(SWF::ActionCode::Push);
+	uint16_t len = 2;
+	append((const uint8_t*)&len, 2);
+	if (idx <= 255) {
+		append(8); // Constant8
+		append(idx);
 	}else {
-		return &*(--it);
+		append(9); // Constant16
+		append((const uint8_t*)&idx, 2);
 	}
 }
 

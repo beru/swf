@@ -78,3 +78,36 @@ void SWDInfo::Read(const uint8_t* buff, size_t length)
 	checkFile(*this);
 }
 
+struct SWDInfoOffsetLessThan
+{
+	bool operator() (const SWDInfo::Offset& left, const SWDInfo::Offset& right)
+	{
+		return left.swf < right.swf;
+	}
+	
+	bool operator() (const SWDInfo::Offset& left, uint32_t right)
+	{
+		return left.swf < right;
+	}
+	
+	bool operator() (uint32_t left, const SWDInfo::Offset& right)
+	{
+		return left < right.swf;
+	}
+};
+
+const SWDInfo::Offset* SWDInfo::FindOffset(uint32_t swfPos) const
+{
+	if (offsets.size() == 0) {
+		return NULL;
+	}
+	std::vector<Offset>::const_iterator it = std::lower_bound(offsets.begin(), offsets.end(), swfPos, SWDInfoOffsetLessThan());
+	if (it == offsets.begin()) {
+		return &offsets.front();
+	}else if (it == offsets.end()) {
+		return &offsets.back();
+	}else {
+		return &*(--it);
+	}
+}
+

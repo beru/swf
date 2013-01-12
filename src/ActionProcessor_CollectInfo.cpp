@@ -3,6 +3,8 @@
 
 #include "swf.h"
 
+#include <algorithm>
+
 /*
 
 ActionJump
@@ -35,6 +37,7 @@ void ActionProcessor_CollectInfo::Process(
 	)
 {
 	positions.clear();
+	fileIds.clear();
 	const uint8_t* buffStart = buff;
 	PositioningInfo info;
 	while (buff - buffStart < len) {
@@ -103,6 +106,12 @@ void ActionProcessor_CollectInfo::Process(
 				}
 			}
 			break;
+		case SWF::ActionCode::Trace:
+			{
+				const SWDInfo::Offset* pOffset = swdInfo.FindOffset(buff - pFileStart);
+				fileIds.push_back(pOffset->file);
+			}
+			break;
 		default:
 			break;
 		}
@@ -111,6 +120,8 @@ void ActionProcessor_CollectInfo::Process(
 			buff += 2 + recLen;
 		}
 	}
-	
+	std::sort(fileIds.begin(), fileIds.end());
+	std::vector<uint32_t>::iterator lastIt = std::unique(fileIds.begin(), fileIds.end());
+	fileIds.resize(lastIt - fileIds.begin());
 }
 

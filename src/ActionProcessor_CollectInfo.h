@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IActionProcessor.h"
+#include "swdInfo.h"
 
 struct PositioningInfo
 {
@@ -13,8 +14,13 @@ struct PositioningInfo
 class ActionProcessor_CollectInfo : public IActionProcessor
 {
 public:
-	ActionProcessor_CollectInfo()
+	ActionProcessor_CollectInfo(
+		const SWDInfo& swdInfo
+		)
+		:
+		swdInfo(swdInfo)
 	{
+		
 	}
 	
 	// override
@@ -26,5 +32,9 @@ public:
 	);
 	
 	std::vector<PositioningInfo> positions;
+	std::vector<uint32_t> fileIds;
+private:
+	const SWDInfo& swdInfo;
+	
 };
 

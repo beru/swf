@@ -15,7 +15,8 @@ public:
 		)
 		:
 		dst(dst),
-		swdInfo(swdInfo)
+		swdInfo(swdInfo),
+		firstPass(swdInfo)
 	{
 	}
 	
@@ -40,6 +41,8 @@ private:
 	}
 	
 	void pushString(const char* str);
+	void pushConstant(uint16_t idx);
+
 	const SWDInfo::Offset* getSWDInfo(const uint8_t* buff);
 	void checkPositions(const uint8_t* buff, int addedSize);
 	void updatePositions();
@@ -54,6 +57,7 @@ private:
 	size_t dstStartSize;
 
 	SWDInfo::Offset lastTraceOffset;
+	uint16_t constantPoolNewEntryIndex;
 };
 
 
