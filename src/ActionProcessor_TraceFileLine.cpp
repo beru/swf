@@ -85,19 +85,21 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 			{
 				const SWDInfo::Offset* pOffset = getSWDInfo(buff);
 				const std::map<uint32_t, SWDInfo::File>::const_iterator it = swdInfo.files.find(pOffset->file);
-				char str[512];
-				sprintf(str, "%s %d ", it->second.name, pOffset->line);
-				size_t before = dst.size();
-				{
-					pushString(str);
-					append(SWF::ActionCode::StackSwap);
-					append(SWF::ActionCode::StringAdd);
+				if (it == swdInfo.files.end()) {
+					printf("SWD Script entry not found.");
+				}else {
+					char str[512];
+					sprintf(str, "%s %d ", it->second.name, pOffset->line);
+					size_t before = dst.size();
+					{
+						pushString(str);
+						append(SWF::ActionCode::StackSwap);
+						append(SWF::ActionCode::StringAdd);
+					}
+					size_t after = dst.size();
+					checkPositions(buff, after - before);
 				}
-				size_t after = dst.size();
-				checkPositions(buff, after - before);
-				{
-					append(SWF::ActionCode::Trace);
-				}
+				append(SWF::ActionCode::Trace);
 				++buff;
 			}
 			break;
