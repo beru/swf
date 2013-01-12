@@ -34,6 +34,8 @@ void ActionProcessor_TraceFileLine::Process(
 	this->pFileStart = pFileStart;
 	this->pBuffStart = buff;
 	this->dstStartSize = dst.size();
+	this->lastTraceOffset.file = 0;
+	this->lastTraceOffset.line = 0;
 	iterate(buff, len);
 	
 	updatePositions();
@@ -84,9 +86,13 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 		case SWF::ActionCode::Trace:
 			{
 				const SWDInfo::Offset* pOffset = getSWDInfo(buff);
+				if (pOffset->file == lastTraceOffset.file && pOffset->line == lastTraceOffset.line) {
+					printf("SWD file may contain wrong info. Multiple Trace calls hit the same offset data in SWD file. \n");
+				}
+				lastTraceOffset = *pOffset;
 				const std::map<uint32_t, SWDInfo::File>::const_iterator it = swdInfo.files.find(pOffset->file);
 				if (it == swdInfo.files.end()) {
-					printf("SWD Script entry not found.");
+					printf("SWD Script entry not found.\n");
 				}else {
 					char str[512];
 					sprintf(str, "%s %d ", it->second.name, pOffset->line);

@@ -52,6 +52,8 @@ private:
 	ActionProcessor_CollectInfo firstPass;
 	std::vector<PositioningInfo> newPositions;
 	size_t dstStartSize;
+
+	SWDInfo::Offset lastTraceOffset;
 };
 
 

@@ -12,6 +12,23 @@ bool compare(const SWDInfo::Offset& lhs, const SWDInfo::Offset& rhs)
 	return lhs.swf < rhs.swf;
 }
 
+static
+void checkFile(const SWDInfo& swd)
+{
+	uint32_t prevFile = -1;
+	const std::vector<SWDInfo::Offset>& offsets = swd.offsets;
+	for (size_t i=0; i<offsets.size(); ++i) {
+		const SWDInfo::Offset& o = offsets[i];
+		uint32_t file = o.file;
+		if (file != prevFile) {
+			if (swd.files.find(file) == swd.files.end()) {
+				printf("File id(%d) not found in script section.\n", file);
+			}
+			prevFile = file;
+		}
+	}
+}
+
 void SWDInfo::Read(const uint8_t* buff, size_t length)
 {
 	const uint8_t* pStart = buff;
@@ -58,5 +75,6 @@ void SWDInfo::Read(const uint8_t* buff, size_t length)
 	}
 
 	std::sort(offsets.begin(), offsets.end(), compare);
+	checkFile(*this);
 }
 
