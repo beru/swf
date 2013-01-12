@@ -15,14 +15,27 @@ size_t getFileSize(FILE* file)
 	return length;
 }
 
+void usage()
+{
+	puts("usage: src_swf dst_swf");
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc < 3) {
-		return puts("usage: src_swf dst_swf");
+		usage();
+		return 0;
 	}
 	
 	const char* srcFileName = argv[1];
 	const char* dstFileName = argv[2];
+
+	if (strcmp(srcFileName, dstFileName) == 0) {
+		puts("do not specify same file name.\n");
+		usage();
+		return 0;
+	}
+
 	SWDInfo swdInfo;
 	
 	std::vector<uint8_t> swdBuff;
@@ -40,6 +53,9 @@ int main(int argc, char* argv[])
 				fread(&swdBuff[0], 1, sz, f);
 				fclose(f);
 				swdInfo.Read(&swdBuff[0], sz);
+			}else {
+				puts("swd file not found.\n");
+				return 0;
 			}
 		}
 	}

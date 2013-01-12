@@ -87,12 +87,12 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 			{
 				const SWDInfo::Offset* pOffset = getSWDInfo(buff);
 				if (pOffset->file == lastTraceOffset.file && pOffset->line == lastTraceOffset.line) {
-					printf("SWD file may contain wrong info. Multiple Trace calls hit the same offset data in SWD file. \n");
+					puts("SWD file may contain wrong info. Multiple Trace calls hit the same offset data in SWD file. \n");
 				}
 				lastTraceOffset = *pOffset;
 				const std::map<uint32_t, SWDInfo::File>::const_iterator it = swdInfo.files.find(pOffset->file);
 				if (it == swdInfo.files.end()) {
-					printf("SWD Script entry not found.\n");
+					puts("SWD Script entry not found.\n");
 				}else {
 					char str[512];
 					sprintf(str, "%s %d ", it->second.name, pOffset->line);
