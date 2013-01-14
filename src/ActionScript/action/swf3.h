@@ -3,7 +3,15 @@
 void actionGotoFrame() {
 }
 
-void actionPrevFrame() {
+void actionGetURL() {
+	
+}
+
+void actionNextFrame() {
+
+}
+
+void actionPreviousFrame() {
 }
 
 void actionPlay() {
@@ -18,7 +26,7 @@ void actionToggleQuality() {
 void actionStopSounds() {
 }
 
-void actionWaitFrame() {
+void actionWaitForFrame() {
 }
 
 void actionSetTarget() {

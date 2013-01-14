@@ -49,6 +49,10 @@ void ActionProcessor_CollectInfo::Process(
 		}
 		const uint8_t* buffNext = buff + 3 + recLen;
 		switch (ecode) {
+		case SWF::ActionCode::WaitForFrame:
+		case SWF::ActionCode::WaitForFrame2:
+			puts("WaitForFrame actions are not supported yet.\n");
+			break;
 		case SWF::ActionCode::Jump:
 		case SWF::ActionCode::If:
 			{

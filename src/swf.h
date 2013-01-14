@@ -108,12 +108,14 @@ namespace ActionCode {
 		
 		// SWF 3 actions
 		GotoFrame = 0x81,
-		PrevFrame = 0x05,
+		GetURL = 0x83,
+		NextFrame = 0x04,
+		PreviousFrame = 0x05,
 		Play = 0x06,
 		Stop = 0x07,
 		ToggleQuality = 0x08,
 		StopSounds = 0x09,
-		WaitFrame = 0x8A,
+		WaitForFrame = 0x8A,
 		SetTarget = 0x8B,
 		GoToLabel = 0x8C,
 		

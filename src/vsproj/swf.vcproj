@@ -234,14 +234,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\FastDelegate.h"
-				>
-			</File>
-			<File
-				RelativePath="..\FastDelegateBind.h"
-				>
-			</File>
-			<File
 				RelativePath="..\IActionProcessor.h"
 				>
 			</File>
