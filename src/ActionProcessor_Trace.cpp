@@ -1,5 +1,5 @@
 
-#include "ActionProcessor_TraceFileLine.h"
+#include "ActionProcessor_Trace.h"
 
 #include "swf.h"
 #include <algorithm>
@@ -7,7 +7,7 @@
 
 // override
 // virtual
-void ActionProcessor_TraceFileLine::Process(
+void ActionProcessor_Trace::Process(
 	const uint8_t* const pFileStart,
 	const uint8_t* buff,
 	size_t len
@@ -26,7 +26,20 @@ void ActionProcessor_TraceFileLine::Process(
 	updatePositions();
 }
 
-void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
+void ActionProcessor_Trace::moveToNextAction(const uint8_t*& buff)
+{
+	uint8_t code = *buff;
+	if (code & 0x80) {
+		size_t recLen = *(const uint16_t*)(buff+1);
+		append(buff, 3 + recLen);
+		buff += 3 + recLen;
+	}else {
+		append(buff, 1);
+		++buff;
+	}
+}
+
+void ActionProcessor_Trace::iterate(const uint8_t* buff, size_t len)
 {
 	const uint8_t* start = buff;
 	while (buff - start < len) {
@@ -38,7 +51,7 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 		}
 		switch (ecode) {
 		case SWF::ActionCode::ConstantPool:
-			{
+			if (addFilePathAndLineNo) {
 				append(ecode); ++buff;
 				size_t recLenPos = dst.size();
 				append(buff, 2); buff += 2;
@@ -46,8 +59,9 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 				size_t countPos = dst.size();
 				append(buff, recLen); buff += recLen;
 				size_t prevSize = dst.size();
-				for (size_t i=0; i<firstPass.fileIds.size(); ++i) {
-					uint32_t id = firstPass.fileIds[i];
+				const std::vector<uint32_t>& traceFileIds = firstPass.traceFileIds;
+				for (size_t i=0; i<traceFileIds.size(); ++i) {
+					uint32_t id = traceFileIds[i];
 					const std::map<uint32_t, SWDInfo::File>::const_iterator it = swdInfo.files.find(id);
 					if (it == swdInfo.files.end()) {
 						puts("SWD Script entry not found.\n");
@@ -58,8 +72,10 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 				}
 				size_t plusSize = dst.size() - prevSize;
 				*(uint16_t*)&dst[recLenPos] += plusSize;
-				*(uint16_t*)&dst[countPos] = constantPoolNewEntryIndex + firstPass.fileIds.size();
+				*(uint16_t*)&dst[countPos] = constantPoolNewEntryIndex + traceFileIds.size();
 				checkPositions(buff, plusSize);
+			}else {
+				moveToNextAction(buff);
 			}
 			break;
 		case SWF::ActionCode::DefineFunction:
@@ -94,43 +110,51 @@ void ActionProcessor_TraceFileLine::iterate(const uint8_t* buff, size_t len)
 //		case SWF::ActionCode::DefineFunction2:
 //			break;
 		case SWF::ActionCode::Trace:
-			{
+			if (filteringFileIds.size() == 0 && !addFilePathAndLineNo) {
+				append(SWF::ActionCode::Trace);
+				++buff;
+			}else {
 				const SWDInfo::Offset* pOffset = swdInfo.FindOffset(buff - pFileStart);
 				if (pOffset->file == lastTraceOffset.file && pOffset->line == lastTraceOffset.line) {
 					puts("SWD file may contain wrong info. Multiple Trace calls hit the same offset data in SWD file. \n");
 				}
 				lastTraceOffset = *pOffset;
-				std::vector<uint32_t>::const_iterator it = std::find(firstPass.fileIds.begin(), firstPass.fileIds.end(), pOffset->file);
-				if (it != firstPass.fileIds.end()) {
-					size_t before = dst.size();
-					pushConstant(constantPoolNewEntryIndex + (it - firstPass.fileIds.begin()));
-					char str[32];
-					sprintf(str, " %d ", pOffset->line);
-					pushString(str);
-					append(SWF::ActionCode::StringAdd);
-					append(SWF::ActionCode::StackSwap);
-					append(SWF::ActionCode::StringAdd);
-					size_t after = dst.size();
-					checkPositions(buff, after - before);
+				if (filteringFileIds.size()) {
+					std::vector<uint32_t>::const_iterator it = std::lower_bound(filteringFileIds.begin(), filteringFileIds.end(), pOffset->file);
+					if (it == filteringFileIds.end() || *it != pOffset->file) {
+						append(SWF::ActionCode::Pop);
+						++buff;
+						break;
+					}
+				}
+				if (addFilePathAndLineNo) {
+					const std::vector<uint32_t>& traceFileIds = firstPass.traceFileIds;
+					std::vector<uint32_t>::const_iterator it = std::find(traceFileIds.begin(), traceFileIds.end(), pOffset->file);
+					if (it != traceFileIds.end()) {
+						size_t before = dst.size();
+						pushConstant(constantPoolNewEntryIndex + (it - traceFileIds.begin()));
+						char str[32];
+						sprintf(str, " %d ", pOffset->line);
+						pushString(str);
+						append(SWF::ActionCode::StringAdd);
+						append(SWF::ActionCode::StackSwap);
+						append(SWF::ActionCode::StringAdd);
+						size_t after = dst.size();
+						checkPositions(buff, after - before);
+					}
 				}
 				append(SWF::ActionCode::Trace);
 				++buff;
 			}
 			break;
 		default:
-			append(buff, 1);
-			++buff;
-			if (code & 0x80) {
-				size_t recLen = *(const uint16_t*)buff;
-				append(buff, 2 + recLen);
-				buff += 2 + recLen;
-			}
+			moveToNextAction(buff);
 			break;
 		}
 	}
 }
 
-void ActionProcessor_TraceFileLine::pushString(const char* str)
+void ActionProcessor_Trace::pushString(const char* str)
 {
 	append(SWF::ActionCode::Push);
 	size_t slen = strlen(str);
@@ -141,7 +165,7 @@ void ActionProcessor_TraceFileLine::pushString(const char* str)
 
 }
 
-void ActionProcessor_TraceFileLine::pushConstant(uint16_t idx)
+void ActionProcessor_Trace::pushConstant(uint16_t idx)
 {
 	append(SWF::ActionCode::Push);
 	uint16_t len = 2;
@@ -155,7 +179,7 @@ void ActionProcessor_TraceFileLine::pushConstant(uint16_t idx)
 	}
 }
 
-void ActionProcessor_TraceFileLine::checkPositions(const uint8_t* buff, int addedSize)
+void ActionProcessor_Trace::checkPositions(const uint8_t* buff, int addedSize)
 {
 	uint16_t pos = buff - pBuffStart;
 	const std::vector<PositioningInfo>& orgPositions = firstPass.positions;
@@ -175,7 +199,7 @@ void ActionProcessor_TraceFileLine::checkPositions(const uint8_t* buff, int adde
 	}
 }
 
-void ActionProcessor_TraceFileLine::updatePositions()
+void ActionProcessor_Trace::updatePositions()
 {
 	uint8_t* pDstBuffStart = &(this->dst[this->dstStartSize]);
 	for (size_t i=0; i<newPositions.size(); ++i) {

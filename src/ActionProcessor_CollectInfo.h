@@ -32,7 +32,7 @@ public:
 	);
 	
 	std::vector<PositioningInfo> positions;
-	std::vector<uint32_t> fileIds;
+	std::vector<uint32_t> traceFileIds;
 private:
 	const SWDInfo& swdInfo;
 	

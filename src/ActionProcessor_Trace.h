@@ -1,22 +1,28 @@
 #pragma once
 
 #include "IActionProcessor.h"
-
 #include "swdInfo.h"
-
 #include "ActionProcessor_CollectInfo.h"
 
-class ActionProcessor_TraceFileLine : public IActionProcessor
+#include <vector>
+
+class ActionProcessor_Trace : public IActionProcessor
 {
 public:
-	ActionProcessor_TraceFileLine(
+	ActionProcessor_Trace(
 		std::vector<uint8_t>& dst,
-		const SWDInfo& swdInfo
+		const SWDInfo& swdInfo,
+		bool addFilePathAndLineNo,
+		bool useOnlyFileName,
+		const std::vector<uint32_t>& filteringFileIds
 		)
 		:
 		dst(dst),
 		swdInfo(swdInfo),
-		firstPass(swdInfo)
+		firstPass(swdInfo),
+		addFilePathAndLineNo(addFilePathAndLineNo),
+		useOnlyFileName(useOnlyFileName),
+		filteringFileIds(filteringFileIds)
 	{
 	}
 	
@@ -30,7 +36,7 @@ public:
 	
 private:
 	void iterate(const uint8_t* buff, size_t len);
-
+	void moveToNextAction(const uint8_t*& buff);
 	void append(const uint8_t* buff, size_t nBytes)
 	{
 		dst.insert(dst.end(), buff, buff+nBytes);
@@ -56,8 +62,13 @@ private:
 	std::vector<PositioningInfo> newPositions;
 	size_t dstStartSize;
 
-	SWDInfo::Offset lastTraceOffset;
-	uint16_t constantPoolNewEntryIndex;
+	SWDInfo::Offset lastTraceOffset;	// used to check if SWD Offset is broken
+	uint16_t constantPoolNewEntryIndex;	// used for index offset
+	
+	bool addFilePathAndLineNo;
+	bool useOnlyFileName;
+	const std::vector<uint32_t>& filteringFileIds;
+
 };
 
 

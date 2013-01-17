@@ -21,7 +21,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
-			CharacterSet="1"
+			CharacterSet="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -188,7 +188,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ActionProcessor_TraceFileLine.cpp"
+				RelativePath="..\ActionProcessor_Trace.cpp"
 				>
 			</File>
 			<File
@@ -197,6 +197,10 @@
 			</File>
 			<File
 				RelativePath="..\miniz.c"
+				>
+			</File>
+			<File
+				RelativePath="..\setting.cpp"
 				>
 			</File>
 			<File
@@ -230,11 +234,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\ActionProcessor_TraceFileLine.h"
+				RelativePath="..\ActionProcessor_Trace.h"
 				>
 			</File>
 			<File
 				RelativePath="..\IActionProcessor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\setting.h"
 				>
 			</File>
 			<File
@@ -355,6 +363,42 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="pugixml"
+			>
+			<File
+				RelativePath="..\pugixml\pugiconfig.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\pugixml\pugixml.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\pugixml\pugixml.hpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="xml_serialization"
+			>
+			<File
+				RelativePath="..\xml_serialization\array_scan.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\xml_serialization\array_scan.h"
+				>
+			</File>
+			<File
+				RelativePath="..\xml_serialization\impl.h"
+				>
+			</File>
+			<File
+				RelativePath="..\xml_serialization\serialization.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

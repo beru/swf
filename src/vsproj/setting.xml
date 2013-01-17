@@ -1,0 +1,8 @@
+<Setting
+	addFilePathAndLineNo = "1"
+	useOnlyFileName = "1"
+	useFileNameFiltering = "0"
+>
+	<TargetFileName name="Test.as"></TargetFileName>
+	<TargetFileName name="Test2.as"></TargetFileName>
+</Setting>
